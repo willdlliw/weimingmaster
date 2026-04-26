@@ -1,0 +1,2965 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>威銘大師 2.1.3｜人生底層代碼穿透</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --bg-primary: #0a0e1a;
+    --bg-card: rgba(255, 255, 255, 0.03);
+    --bg-card-hover: rgba(255, 255, 255, 0.06);
+    --border-gold: rgba(212, 175, 55, 0.25);
+    --border-gold-strong: rgba(212, 175, 55, 0.6);
+    --text-primary: #f5f2e8;
+    --text-secondary: #9ba0ab;
+    --text-muted: #5a5f6b;
+    --gold: #d4af37;
+    --gold-bright: #f5d76e;
+    --red: #c94a3b;
+    --blue: #4a7fa5;
+    --green: #6b9e7e;
+    --purple: #8a6bb1;
+    --water: #3f8ba8;
+    --fire: #d66852;
+    --wood: #6b9e5e;
+    --earth: #a88d5f;
+    --metal: #c8ccd4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-primary);
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(74, 127, 165, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(212, 175, 55, 0.05) 0%, transparent 40%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    font-family: 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border-gold);
+  }
+  .header .seal {
+    display: inline-block;
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 4px 12px;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    letter-spacing: 2px;
+  }
+
+  /* ===== Step Indicator ===== */
+  .steps {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 48px;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border: 1px solid var(--border-gold);
+    background: var(--bg-card);
+    font-size: 13px;
+    color: var(--text-muted);
+    transition: all 0.3s;
+  }
+  .step-item.active {
+    color: var(--gold);
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.08);
+  }
+  .step-item.done {
+    color: var(--green);
+    border-color: rgba(107, 158, 126, 0.4);
+  }
+  .step-item .num {
+    display: inline-flex;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    justify-content: center; align-items: center;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 12px;
+  }
+  .step-connector {
+    flex: 0 0 30px;
+    height: 1px;
+    background: var(--border-gold);
+    align-self: center;
+  }
+
+  /* ===== Section ===== */
+  section { display: none; }
+  section.active { display: block; animation: fadeIn 0.5s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  .section-title .num-badge {
+    display: inline-block;
+    font-size: 14px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 2px 8px;
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+  .section-desc {
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  /* ===== Example Reference ===== */
+  .example-section {
+    margin-bottom: 40px;
+    padding: 24px;
+    border: 1px solid var(--border-gold);
+    background: var(--bg-card);
+  }
+  .example-section h4 {
+    font-family: 'Noto Serif TC', serif;
+    color: var(--gold);
+    margin-bottom: 16px;
+    font-size: 16px;
+  }
+  .example-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 768px) { .example-grid { grid-template-columns: 1fr; } }
+
+  /* ===== Buttons ===== */
+  .btn {
+    display: inline-block;
+    padding: 14px 32px;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 15px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    background: transparent;
+    border: 1px solid var(--gold);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+  }
+  .btn:hover { background: var(--gold); color: var(--bg-primary); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn:disabled:hover { background: transparent; color: var(--gold); }
+  .btn-ghost { border-color: var(--border-gold); color: var(--text-secondary); }
+  .btn-ghost:hover { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--text-primary); }
+
+  .btn-row { display: flex; gap: 16px; justify-content: center; margin-top: 24px; }
+
+  /* ===== 咒語區頂部（含日期輸入 + 複製按鈕）===== */
+  .prompt-header {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 8px;
+  }
+  .prompt-title { font-size: 13px; color: var(--gold); letter-spacing: 1px; }
+  .prompt-actions {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .date-input-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--text-muted); letter-spacing: 1px;
+    border: 1px solid var(--border-gold); padding: 4px 8px;
+    background: var(--bg-primary);
+  }
+  .date-input-label .lab { white-space: nowrap; }
+  .date-input-label input[type="date"] {
+    background: transparent; border: 0; outline: 0;
+    color: var(--gold); font-family: 'Courier New', monospace;
+    font-size: 12px; letter-spacing: 1px; padding: 2px 4px;
+    color-scheme: dark;
+  }
+  .copy-prompt-btn {
+    padding: 6px 14px !important; font-size: 11px !important;
+    letter-spacing: 2px !important; touch-action: manipulation;
+  }
+  @media (max-width: 640px) {
+    .prompt-actions { width: 100%; justify-content: space-between; }
+    .copy-prompt-btn { flex: 1; }
+  }
+
+  /* LINE WebView 警告橫幅 */
+  .line-warning {
+    background: linear-gradient(135deg, #2a4a3a, #1f3528);
+    border: 1px solid #4a8a6a;
+    color: #c8e6cc;
+    padding: 12px 16px;
+    margin: 0 0 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    display: none;
+  }
+  .line-warning.active { display: block; }
+  .line-warning strong { color: #8fdba8; letter-spacing: 1px; }
+  .line-warning ol { margin: 6px 0 0 18px; padding: 0; }
+  .line-warning li { margin: 3px 0; }
+
+  /* ===== API Config ===== */
+  .api-setup {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 32px;
+    border: 1px solid var(--border-gold);
+    background: var(--bg-card);
+  }
+  .form-group { margin-bottom: 24px; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-gold);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--gold); }
+  .form-group .hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+  .form-group .hint a { color: var(--gold); text-decoration: none; }
+  .form-group .hint a:hover { text-decoration: underline; }
+
+  .privacy-box {
+    margin-top: 24px;
+    padding: 16px;
+    border-left: 2px solid var(--green);
+    background: rgba(107, 158, 126, 0.06);
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+  }
+  .privacy-box strong { color: var(--green); }
+
+  /* ===== Loading ===== */
+  .loading {
+    text-align: center;
+    padding: 80px 24px;
+    display: none;
+  }
+  .loading.active { display: block; }
+  .loading .spinner {
+    width: 48px; height: 48px;
+    margin: 0 auto 24px;
+    border: 2px solid var(--border-gold);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading .status {
+    font-family: 'Noto Serif TC', serif;
+    color: var(--gold);
+    letter-spacing: 4px;
+    font-size: 14px;
+    min-height: 20px;
+  }
+  .loading .sub {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 12px;
+  }
+
+  /* ===== Step 3: Results ===== */
+  .result-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 32px;
+    border: 1px solid var(--border-gold);
+    background: var(--bg-card);
+  }
+  .result-header .motto {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 24px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .result-header .meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+  }
+
+  /* Stage 02 header（含下載按鈕） */
+  .stage2-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .result-actions { display: flex; gap: 8px; }
+  .download-btn {
+    font-size: 12px !important;
+    letter-spacing: 2px !important;
+    padding: 10px 18px !important;
+    display: inline-flex;
+    align-items: center;
+  }
+  .download-btn:disabled { opacity: 0.5; cursor: wait; }
+  @media (max-width: 640px) {
+    .stage2-header { flex-direction: column; align-items: flex-start; }
+    .result-actions { width: 100%; }
+    .download-btn { width: 100%; justify-content: center; }
+  }
+
+  /* 命盤四柱 */
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 640px) { .pillars { grid-template-columns: repeat(2, 1fr); } }
+
+  .pillar {
+    background: var(--bg-card);
+    border: 1px solid var(--border-gold);
+    text-align: center;
+    padding: 16px 8px;
+    position: relative;
+    transition: transform 0.2s;
+  }
+  .pillar .pos {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  .pillar .star {
+    font-size: 11px;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .pillar .char-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .pillar .char {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+  .pillar .branch {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--gold-bright);
+  }
+  .pillar .elem-tag {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    opacity: 0.85;
+    align-self: flex-end;
+    padding-bottom: 4px;
+  }
+  .pillar .branch-row { margin-bottom: 12px; }
+  .pillar .hidden {
+    font-size: 10px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    border-top: 1px dashed var(--border-gold);
+    padding-top: 8px;
+  }
+
+  /* 日主柱：質感 highlight */
+  .pillar.day {
+    border: 1.5px solid var(--gold);
+    background: linear-gradient(160deg, rgba(212, 175, 55, 0.10) 0%, rgba(212, 175, 55, 0.02) 100%);
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.15),
+      0 4px 24px rgba(212, 175, 55, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    z-index: 1;
+  }
+  .pillar.day::before {
+    content: '日 主';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #e6c252 0%, #c89f2c 100%);
+    color: #0a0e1a;
+    font-size: 10px;
+    letter-spacing: 5px;
+    padding: 3px 14px 3px 19px;
+    font-weight: 800;
+    font-family: 'Noto Serif TC', serif;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+  .pillar.day::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    pointer-events: none;
+  }
+  .pillar.day .char {
+    text-shadow: 0 0 14px rgba(212, 175, 55, 0.5), 0 0 4px rgba(212, 175, 55, 0.3);
+  }
+  .pillar.day .branch {
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+  }
+
+  .wuxing-metal { color: var(--metal); }
+  .wuxing-water { color: var(--water); }
+  .wuxing-wood { color: var(--wood); }
+  .wuxing-fire { color: var(--fire); }
+  .wuxing-earth { color: var(--earth); }
+
+  /* Type badge */
+  .type-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 900px) { .type-row { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .type-row { grid-template-columns: 1fr; } }
+  .type-card {
+    border: 1px solid var(--border-gold);
+    background: var(--bg-card);
+    padding: 20px;
+  }
+  .type-card .label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .type-card .value {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 22px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .type-card .desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+
+  /* 雙軌劇本卡（深潛主題） */
+  .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 720px) { .scenario-grid { grid-template-columns: 1fr; } }
+  /* renderStage4 使用 inline grid，但補上 fallback */
+  #stage4Rendered > .block > div[style*="grid-template-columns:1fr 1fr"] { gap: 16px; }
+  @media (max-width: 720px) {
+    #stage4Rendered > .block > div[style*="grid-template-columns:1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* 組合判讀：兩軸的綜合一句話 */
+  .type-combination {
+    border: 1px solid var(--border-gold);
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.06), rgba(212, 175, 55, 0.02));
+    padding: 18px 20px;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .type-combination .label {
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    font-weight: 700;
+  }
+  .type-combination .text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    font-family: 'Noto Serif TC', serif;
+  }
+
+  /* 五行能量分佈 */
+  .wuxing-chart {
+    background: var(--bg-card);
+    border: 1px solid var(--border-gold);
+    padding: 24px;
+    margin-bottom: 40px;
+  }
+  .wuxing-chart h3, .block h3 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 18px;
+    color: var(--gold);
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .wuxing-chart h3::before, .block h3::before {
+    content: '';
+    display: inline-block;
+    width: 4px; height: 16px;
+    background: var(--gold);
+  }
+  .wuxing-bars { display: flex; flex-direction: column; gap: 14px; }
+  .wuxing-bar {
+    display: grid;
+    grid-template-columns: 48px 1fr 90px;
+    gap: 14px;
+    align-items: center;
+  }
+  .wuxing-bar .name {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  .wuxing-bar .track {
+    height: 22px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    position: relative;
+    overflow: hidden;
+    border-radius: 2px;
+    width: 100%;
+  }
+  .wuxing-bar .bar-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    min-width: 4px;
+    border-radius: 2px;
+  }
+  .wuxing-bar .bar-fill.metal {
+    background: linear-gradient(90deg, #8a8f99 0%, #c8ccd4 100%);
+    box-shadow: 0 0 8px rgba(200, 204, 212, 0.6);
+  }
+  .wuxing-bar .bar-fill.water {
+    background: linear-gradient(90deg, #4a90b0 0%, #6bb8d8 100%);
+    box-shadow: 0 0 8px rgba(107, 184, 216, 0.6);
+  }
+  .wuxing-bar .bar-fill.wood {
+    background: linear-gradient(90deg, #6b9e5e 0%, #8fc285 100%);
+    box-shadow: 0 0 8px rgba(143, 194, 133, 0.6);
+  }
+  .wuxing-bar .bar-fill.fire {
+    background: linear-gradient(90deg, #d66852 0%, #f08a72 100%);
+    box-shadow: 0 0 8px rgba(240, 138, 114, 0.6);
+  }
+  .wuxing-bar .bar-fill.earth {
+    background: linear-gradient(90deg, #a88d5f 0%, #c8a87a 100%);
+    box-shadow: 0 0 8px rgba(200, 168, 122, 0.6);
+  }
+  .wuxing-bar .val {
+    text-align: right;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+  }
+
+  /* 能量堵塞 */
+  .block {
+    background: var(--bg-card);
+    border: 1px solid var(--border-gold);
+    padding: 24px;
+    margin-bottom: 40px;
+  }
+  .blockage-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 900px) { .blockage-list { grid-template-columns: 1fr; } }
+  .blockage-item {
+    padding: 14px 16px;
+    border-left: 2px solid var(--red);
+    background: rgba(201, 74, 59, 0.05);
+  }
+  .blockage-item .idx {
+    font-family: 'Noto Serif TC', serif;
+    color: var(--red);
+    font-size: 12px;
+    margin-right: 8px;
+  }
+  .blockage-item .title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .blockage-item .symptom {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .blockage-item .breakthrough {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(107, 158, 94, 0.35);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--text-primary);
+  }
+  .blockage-item .breakthrough::before {
+    content: '突破｜';
+    color: var(--wood);
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  /* 藥方 */
+  .prescription { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .rx {
+    padding: 6px 14px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    border: 1px solid;
+  }
+  .rx.main { background: rgba(63, 139, 168, 0.12); border-color: var(--water); color: var(--water); }
+  .rx.sub { background: rgba(107, 158, 94, 0.12); border-color: var(--wood); color: var(--wood); }
+  .rx.avoid { background: rgba(201, 74, 59, 0.12); border-color: var(--red); color: var(--red); }
+
+  /* 時間軸 */
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+    margin-bottom: 40px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 40px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border-gold);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 32px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-gold);
+    padding: 20px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -28px;
+    top: 24px;
+    width: 12px; height: 12px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    border: 2px solid var(--bg-primary);
+    box-shadow: 0 0 0 2px var(--gold);
+  }
+  .timeline-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed var(--border-gold);
+  }
+  .timeline-head .yr {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 20px;
+    color: var(--gold);
+    letter-spacing: 2px;
+  }
+  .timeline-head .rating { color: var(--gold); letter-spacing: 2px; }
+  .timeline-head .conf {
+    font-size: 11px;
+    padding: 2px 10px;
+    border: 1px solid;
+    letter-spacing: 2px;
+  }
+  .timeline-head .conf.strong { color: var(--red); border-color: var(--red); }
+  .timeline-head .conf.trend { color: var(--gold); border-color: var(--gold); }
+  .timeline-head .conf.weak { color: var(--text-muted); border-color: var(--text-muted); }
+
+  .dual-track { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  @media (max-width: 640px) { .dual-track { grid-template-columns: 1fr; } }
+  .track {
+    padding: 14px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .track.low { background: rgba(201, 74, 59, 0.06); border-left: 2px solid var(--red); }
+  .track.high { background: rgba(107, 158, 94, 0.06); border-left: 2px solid var(--wood); }
+  .track .mode {
+    display: block;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .track.low .mode { color: var(--red); }
+  .track.high .mode { color: var(--wood); }
+
+  .falsify {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed var(--border-gold);
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .falsify strong { color: var(--gold); letter-spacing: 1px; }
+
+  /* === 過去五年（retrospective）變體 === */
+  .timeline-item.past {
+    border-color: rgba(138, 107, 177, 0.45);
+    background: rgba(138, 107, 177, 0.03);
+  }
+  .timeline-item.past::before {
+    background: var(--purple);
+    box-shadow: 0 0 0 2px var(--purple);
+  }
+  .timeline-item.past .timeline-head {
+    border-bottom-color: rgba(138, 107, 177, 0.3);
+  }
+  .timeline-item.past .timeline-head .yr { color: var(--purple); }
+  .timeline-item.past .hypothesis {
+    font-size: 13.5px;
+    color: var(--text-primary);
+    line-height: 1.8;
+    padding: 14px 16px;
+    margin: 4px 0 12px;
+    background: rgba(138, 107, 177, 0.05);
+    border-left: 2px solid var(--purple);
+  }
+  .timeline-item.past .hypothesis .label {
+    display: block;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 12px;
+    color: var(--purple);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .timeline-item.past .reasoning {
+    background: rgba(74, 127, 165, 0.04);
+  }
+  .verify {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(138, 107, 177, 0.5);
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+  }
+  .verify strong {
+    color: var(--purple);
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .past-intro {
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    background: rgba(138, 107, 177, 0.05);
+    border-left: 3px solid var(--purple);
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+  }
+  .past-intro strong { color: var(--purple); }
+
+  .reasoning {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: rgba(74, 127, 165, 0.06);
+    border-left: 2px solid var(--water);
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+  }
+  .reasoning .label {
+    display: block;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 12px;
+    color: var(--water);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .reasoning .classical {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(74, 127, 165, 0.25);
+  }
+  .reasoning .classical::before {
+    content: '命理依據｜';
+    color: var(--water);
+    font-style: normal;
+    letter-spacing: 1px;
+  }
+
+  /* 行為指令 */
+  .action-list { display: flex; flex-direction: column; gap: 10px; }
+  .action-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.02);
+    border-left: 2px solid var(--gold);
+  }
+  .action-item .chk {
+    width: 20px; height: 20px;
+    border: 1px solid var(--gold);
+    flex-shrink: 0;
+    margin-top: 2px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 12px;
+    color: var(--gold);
+  }
+  .action-item.done .chk::before { content: '✓'; }
+  .action-item.done .text { color: var(--text-muted); text-decoration: line-through; }
+  .action-item .text {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-primary);
+  }
+
+  /* 戰袍 */
+  .outfit { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 640px) { .outfit { grid-template-columns: 1fr; } }
+  .color-palette { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .color-chip {
+    width: 52px; height: 52px;
+    border: 1px solid var(--border-gold);
+    position: relative;
+  }
+  .color-chip::after {
+    content: attr(data-name);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .outfit-col h4 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    color: var(--gold);
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+  }
+  .outfit-col .note {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-top: 28px;
+  }
+
+  /* 第四階段 prompt */
+  .stage4-prompt {
+    border: 1px solid var(--gold);
+    background: rgba(212, 175, 55, 0.05);
+    padding: 24px;
+    margin-top: 40px;
+    text-align: center;
+  }
+  .stage4-prompt h3 {
+    font-family: 'Noto Serif TC', serif;
+    color: var(--gold);
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+  .stage4-prompt p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.8;
+  }
+  .stage4-inputs { display: flex; flex-direction: column; gap: 12px; max-width: 600px; margin: 0 auto; }
+  .stage4-inputs input, .stage4-inputs textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-gold);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    resize: vertical;
+  }
+  .stage4-inputs input:focus, .stage4-inputs textarea:focus { border-color: var(--gold); }
+
+  .topic-chip {
+    background: transparent;
+    border: 1px solid var(--border-gold);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-family: 'Noto Serif TC', serif;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .topic-chip:hover {
+    color: var(--gold);
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.05);
+  }
+  .topic-chip.active {
+    color: var(--bg-primary);
+    background: var(--gold);
+    border-color: var(--gold);
+    font-weight: bold;
+  }
+
+  /* Error */
+  .error-box {
+    display: none;
+    padding: 16px;
+    margin: 16px 0;
+    border-left: 2px solid var(--red);
+    background: rgba(201, 74, 59, 0.08);
+    font-size: 13px;
+    color: #f5a89e;
+    line-height: 1.6;
+  }
+  .error-box.active { display: block; }
+
+  /* SVG 範例盤面 */
+  .sample-svg { width: 100%; height: auto; display: block; }
+
+  /* Utility */
+  .text-center { text-align: center; }
+  .mt-24 { margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="seal">威 銘 大 師 2.1.3</div>
+    <h1>人生底層代碼穿透</h1>
+    <div class="subtitle">B A Z I &nbsp;·&nbsp; O P E R A T I N G &nbsp;·&nbsp; S Y S T E M</div>
+  </div>
+
+  <!-- Step Indicator -->
+  <div class="steps">
+    <div class="step-item active" data-step="1"><span class="num">壹</span>取得咒語 · 上傳命盤</div>
+    <div class="step-connector"></div>
+    <div class="step-item" data-step="2"><span class="num">貳</span>盤面輸出</div>
+  </div>
+
+  <!-- ===== STEP 1: COPY PROMPT + PASTE JSON ===== -->
+  <section id="step1" class="active">
+    <h2 class="section-title"><span class="num-badge">STAGE 01</span>取得咒語，讓 Claude 跟你要命盤</h2>
+
+    <!-- LINE WebView 警告（偵測到才顯示）-->
+    <div id="lineWarning" class="line-warning">
+      <strong>⚠ 偵測到你正在 LINE 內建瀏覽器中開啟</strong><br>
+      <span style="color:#ffd2a8;">老實講：LINE WebView 會把所有網頁 JS 自動複製 API（clipboard、execCommand、share）<strong style="color:#ffb86c;">直接擋掉</strong>，這是瀏覽器層級的安全沙盒，不是程式碼能修的 bug。</span>
+      <div style="margin-top:8px;"><strong style="color:#8fdba8;">最乾淨的解：</strong>右上角「⋯」→ 選「<strong>在瀏覽器開啟</strong>」/「以 Safari/Chrome 開啟」，跳出去就正常了。</div>
+      <div style="margin-top:8px;"><strong style="color:#8fdba8;">不想換瀏覽器：</strong>點「複製咒語」會跳出大文字框，<strong>長按文字 → 全選 → 拷貝</strong>（純手動），或直接「<strong>下載為 .txt</strong>」/「<strong>寄到自己信箱</strong>」繞過剪貼簿。</div>
+    </div>
+
+    <p class="section-desc">不用 API Key、不用後端、零成本。把下方「咒語」貼到 <a href="https://claude.ai" target="_blank" style="color:var(--gold);">claude.ai</a>，Claude 會主動請你上傳兩張命盤截圖、分析完回傳 JSON，貼回本頁就自動渲染成盤面。</p>
+
+    <!-- 流程指引 -->
+    <div class="example-section" style="margin-bottom:24px;">
+      <h4>操作流程（四步驟）</h4>
+      <ol style="padding-left:20px; line-height:2.2; font-size:13px; color:var(--text-secondary);">
+        <li>點下方「複製咒語」→ 咒語進入你剪貼簿</li>
+        <li>開啟 <a href="https://claude.ai" target="_blank" style="color:var(--gold);">claude.ai</a> 新對話（建議 Opus 4.6），貼上咒語送出</li>
+        <li>Claude 會主動請你上傳兩張截圖（命盤四柱 + 大運流年，見下方格式）。建議來源：<a href="https://www.suanming.com.tw" target="_blank" style="color:var(--gold);">suanming.com.tw</a>。<strong style="color:var(--gold);">嚴禁</strong>直接輸生日讓 AI 自排（避免換算幻覺）</li>
+        <li>Claude 回傳一整段 JSON → 整段複製 → 貼到本頁下方框框 → 按「渲染盤面」</li>
+      </ol>
+    </div>
+
+    <!-- 範例格式參考（打碼） -->
+    <div class="example-section">
+      <h4>要傳給 Claude 的兩張圖（個資已打碼）</h4>
+      <div class="example-grid">
+        <!-- Sample 1: 命盤 -->
+        <svg class="sample-svg" viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="mosaic1" width="8" height="8" patternUnits="userSpaceOnUse">
+              <rect width="8" height="8" fill="#3a3f4b"/>
+              <rect width="4" height="4" fill="#4a4f5b"/>
+              <rect x="4" y="4" width="4" height="4" fill="#4a4f5b"/>
+            </pattern>
+          </defs>
+          <!-- 資訊區 -->
+          <rect x="10" y="10" width="380" height="140" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.4"/>
+          <text x="30" y="35" fill="#9ba0ab" font-size="11" font-family="Noto Serif TC">資訊</text>
+          <rect x="100" y="22" width="260" height="16" fill="url(#mosaic1)"/>
+          <text x="30" y="65" fill="#9ba0ab" font-size="11" font-family="Noto Serif TC">西曆</text>
+          <rect x="100" y="52" width="200" height="16" fill="url(#mosaic1)"/>
+          <text x="30" y="95" fill="#9ba0ab" font-size="11" font-family="Noto Serif TC">農曆</text>
+          <rect x="100" y="82" width="180" height="16" fill="url(#mosaic1)"/>
+          <text x="30" y="125" fill="#9ba0ab" font-size="11" font-family="Noto Serif TC">命格</text>
+          <text x="100" y="125" fill="#d4af37" font-size="12" font-family="Noto Serif TC">〇〇格</text>
+
+          <!-- 四柱標題 -->
+          <rect x="10" y="170" width="380" height="24" fill="rgba(138,107,177,0.15)" stroke="#d4af37" stroke-width="0.5"/>
+          <text x="200" y="187" fill="#d4af37" font-size="12" font-family="Noto Serif TC" text-anchor="middle" letter-spacing="3">八 字 命 盤</text>
+
+          <text x="55" y="215" fill="#9ba0ab" font-size="11" text-anchor="middle">年柱</text>
+          <text x="150" y="215" fill="#9ba0ab" font-size="11" text-anchor="middle">月柱</text>
+          <text x="245" y="215" fill="#9ba0ab" font-size="11" text-anchor="middle">日柱</text>
+          <text x="340" y="215" fill="#9ba0ab" font-size="11" text-anchor="middle">時柱</text>
+
+          <!-- 主星 -->
+          <text x="55" y="240" fill="#d4af37" font-size="11" text-anchor="middle">〇〇</text>
+          <text x="150" y="240" fill="#d4af37" font-size="11" text-anchor="middle">〇〇</text>
+          <text x="245" y="240" fill="#d4af37" font-size="11" text-anchor="middle">元男</text>
+          <text x="340" y="240" fill="#d4af37" font-size="11" text-anchor="middle">〇〇</text>
+
+          <!-- 天干（打碼大字） -->
+          <rect x="25" y="255" width="60" height="50" fill="url(#mosaic1)"/>
+          <rect x="120" y="255" width="60" height="50" fill="url(#mosaic1)"/>
+          <rect x="215" y="255" width="60" height="50" fill="url(#mosaic1)" stroke="#d4af37" stroke-width="1.5"/>
+          <rect x="310" y="255" width="60" height="50" fill="url(#mosaic1)"/>
+
+          <!-- 地支（打碼大字） -->
+          <rect x="25" y="315" width="60" height="50" fill="url(#mosaic1)"/>
+          <rect x="120" y="315" width="60" height="50" fill="url(#mosaic1)"/>
+          <rect x="215" y="315" width="60" height="50" fill="url(#mosaic1)" stroke="#d4af37" stroke-width="1.5"/>
+          <rect x="310" y="315" width="60" height="50" fill="url(#mosaic1)"/>
+
+          <!-- 藏幹 -->
+          <text x="55" y="385" fill="#9ba0ab" font-size="9" text-anchor="middle">（〇）〇〇</text>
+          <text x="55" y="398" fill="#9ba0ab" font-size="9" text-anchor="middle">（〇）〇〇</text>
+          <text x="150" y="385" fill="#9ba0ab" font-size="9" text-anchor="middle">（〇）〇〇</text>
+          <text x="150" y="398" fill="#9ba0ab" font-size="9" text-anchor="middle">（〇）〇〇</text>
+          <text x="150" y="411" fill="#9ba0ab" font-size="9" text-anchor="middle">（〇）〇〇</text>
+          <text x="245" y="385" fill="#9ba0ab" font-size="9" text-anchor="middle">（〇）〇〇</text>
+          <text x="245" y="398" fill="#9ba0ab" font-size="9" text-anchor="middle">（〇）〇〇</text>
+          <text x="245" y="411" fill="#9ba0ab" font-size="9" text-anchor="middle">（〇）〇〇</text>
+          <text x="340" y="385" fill="#9ba0ab" font-size="9" text-anchor="middle">（〇）〇〇</text>
+
+          <!-- 地勢 -->
+          <text x="200" y="440" fill="#d4af37" font-size="11" text-anchor="middle" letter-spacing="2">地 勢 / 納 音 / 神 煞</text>
+          <rect x="25" y="450" width="60" height="50" fill="url(#mosaic1)" opacity="0.5"/>
+          <rect x="120" y="450" width="60" height="50" fill="url(#mosaic1)" opacity="0.5"/>
+          <rect x="215" y="450" width="60" height="50" fill="url(#mosaic1)" opacity="0.5"/>
+          <rect x="310" y="450" width="60" height="50" fill="url(#mosaic1)" opacity="0.5"/>
+        </svg>
+
+        <!-- Sample 2: 大運流年 -->
+        <svg class="sample-svg" viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="mosaic2" width="6" height="6" patternUnits="userSpaceOnUse">
+              <rect width="6" height="6" fill="#3a3f4b"/>
+              <rect width="3" height="3" fill="#4a4f5b"/>
+              <rect x="3" y="3" width="3" height="3" fill="#4a4f5b"/>
+            </pattern>
+          </defs>
+          <!-- 標題列 -->
+          <text x="200" y="25" fill="#d4af37" font-size="12" font-family="Noto Serif TC" text-anchor="middle" letter-spacing="3">大 運 流 年 表</text>
+
+          <!-- 大運列 -->
+          <text x="30" y="60" fill="#d4af37" font-size="11" font-family="Noto Serif TC">大運</text>
+          <g transform="translate(75, 45)">
+            <rect x="0" y="0" width="40" height="30" fill="url(#mosaic2)"/>
+            <rect x="42" y="0" width="40" height="30" fill="url(#mosaic2)"/>
+            <rect x="84" y="0" width="40" height="30" fill="url(#mosaic2)" stroke="#d4af37" stroke-width="1.2"/>
+            <rect x="126" y="0" width="40" height="30" fill="url(#mosaic2)"/>
+            <rect x="168" y="0" width="40" height="30" fill="url(#mosaic2)"/>
+            <rect x="210" y="0" width="40" height="30" fill="url(#mosaic2)"/>
+            <rect x="252" y="0" width="40" height="30" fill="url(#mosaic2)"/>
+          </g>
+          <!-- 地勢列 -->
+          <text x="30" y="95" fill="#9ba0ab" font-size="10" font-family="Noto Serif TC">地勢</text>
+          <text x="95" y="95" fill="#9ba0ab" font-size="9" text-anchor="middle">〇</text>
+          <text x="137" y="95" fill="#9ba0ab" font-size="9" text-anchor="middle">〇</text>
+          <text x="179" y="95" fill="#d4af37" font-size="9" text-anchor="middle" font-weight="bold">●</text>
+          <text x="221" y="95" fill="#9ba0ab" font-size="9" text-anchor="middle">〇</text>
+          <text x="263" y="95" fill="#9ba0ab" font-size="9" text-anchor="middle">〇</text>
+          <text x="305" y="95" fill="#9ba0ab" font-size="9" text-anchor="middle">〇</text>
+          <text x="347" y="95" fill="#9ba0ab" font-size="9" text-anchor="middle">〇</text>
+
+          <!-- 起始年齡 -->
+          <text x="30" y="115" fill="#9ba0ab" font-size="10" font-family="Noto Serif TC">歲次</text>
+          <text x="95" y="115" fill="#9ba0ab" font-size="9" text-anchor="middle">1〇</text>
+          <text x="137" y="115" fill="#9ba0ab" font-size="9" text-anchor="middle">2〇</text>
+          <text x="179" y="115" fill="#d4af37" font-size="9" text-anchor="middle">3〇</text>
+          <text x="221" y="115" fill="#9ba0ab" font-size="9" text-anchor="middle">4〇</text>
+          <text x="263" y="115" fill="#9ba0ab" font-size="9" text-anchor="middle">5〇</text>
+          <text x="305" y="115" fill="#9ba0ab" font-size="9" text-anchor="middle">6〇</text>
+          <text x="347" y="115" fill="#9ba0ab" font-size="9" text-anchor="middle">7〇</text>
+
+          <!-- 分隔 -->
+          <line x1="30" y1="130" x2="370" y2="130" stroke="#d4af37" stroke-width="0.4" opacity="0.4"/>
+
+          <!-- 流年列 -->
+          <text x="30" y="170" fill="#d4af37" font-size="11" font-family="Noto Serif TC">流年</text>
+
+          <!-- 年份列 (打碼) -->
+          <g transform="translate(75, 150)">
+            <rect x="0" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+            <rect x="42" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+            <rect x="84" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7" stroke="#d4af37" stroke-width="1"/>
+            <rect x="126" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+            <rect x="168" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+            <rect x="210" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+            <rect x="252" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+          </g>
+
+          <!-- 每欄流年干支 10 個 -->
+          <g font-size="8" fill="#9ba0ab" text-anchor="middle">
+            <!-- 示意多列 -->
+            <g transform="translate(0, 185)">
+              <text x="95">〇〇</text><text x="137">〇〇</text><text x="179" fill="#d4af37">〇〇</text><text x="221">〇〇</text><text x="263">〇〇</text><text x="305">〇〇</text><text x="347">〇〇</text>
+            </g>
+            <g transform="translate(0, 205)">
+              <text x="95">〇〇</text><text x="137">〇〇</text><text x="179" fill="#d4af37">〇〇</text><text x="221">〇〇</text><text x="263">〇〇</text><text x="305">〇〇</text><text x="347">〇〇</text>
+            </g>
+            <g transform="translate(0, 225)">
+              <text x="95">〇〇</text><text x="137">〇〇</text><text x="179" fill="#d4af37">〇〇</text><text x="221">〇〇</text><text x="263">〇〇</text><text x="305">〇〇</text><text x="347">〇〇</text>
+            </g>
+            <g transform="translate(0, 245)">
+              <text x="95">〇〇</text><text x="137">〇〇</text><text x="179" fill="#d4af37">〇〇</text><text x="221">〇〇</text><text x="263">〇〇</text><text x="305">〇〇</text><text x="347">〇〇</text>
+            </g>
+            <g transform="translate(0, 265)">
+              <text x="95">〇〇</text><text x="137">〇〇</text><text x="179" fill="#d4af37">〇〇</text><text x="221">〇〇</text><text x="263">〇〇</text><text x="305">〇〇</text><text x="347">〇〇</text>
+            </g>
+            <g transform="translate(0, 285)">
+              <text x="95">〇〇</text><text x="137">〇〇</text><text x="179" fill="#d4af37">〇〇</text><text x="221">〇〇</text><text x="263">〇〇</text><text x="305">〇〇</text><text x="347">〇〇</text>
+            </g>
+            <g transform="translate(0, 305)">
+              <text x="95">〇〇</text><text x="137">〇〇</text><text x="179" fill="#d4af37">〇〇</text><text x="221">〇〇</text><text x="263">〇〇</text><text x="305">〇〇</text><text x="347">〇〇</text>
+            </g>
+            <g transform="translate(0, 325)">
+              <text x="95">〇〇</text><text x="137">〇〇</text><text x="179" fill="#d4af37">〇〇</text><text x="221">〇〇</text><text x="263">〇〇</text><text x="305">〇〇</text><text x="347">〇〇</text>
+            </g>
+            <g transform="translate(0, 345)">
+              <text x="95">〇〇</text><text x="137">〇〇</text><text x="179" fill="#d4af37">〇〇</text><text x="221">〇〇</text><text x="263">〇〇</text><text x="305">〇〇</text><text x="347">〇〇</text>
+            </g>
+            <g transform="translate(0, 365)">
+              <text x="95">〇〇</text><text x="137">〇〇</text><text x="179" fill="#d4af37">〇〇</text><text x="221">〇〇</text><text x="263">〇〇</text><text x="305">〇〇</text><text x="347">〇〇</text>
+            </g>
+          </g>
+
+          <!-- 年份尾列 -->
+          <g transform="translate(75, 380)">
+            <rect x="0" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+            <rect x="42" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+            <rect x="84" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7" stroke="#d4af37" stroke-width="1"/>
+            <rect x="126" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+            <rect x="168" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+            <rect x="210" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+            <rect x="252" y="0" width="40" height="18" fill="url(#mosaic2)" opacity="0.7"/>
+          </g>
+
+          <text x="200" y="425" fill="#5a5f6b" font-size="10" text-anchor="middle">（金色框 = 當前大運 / 流年位置示意）</text>
+          <text x="200" y="445" fill="#5a5f6b" font-size="10" text-anchor="middle">所有數值於上傳後由 Claude 識別</text>
+        </svg>
+
+      </div>
+    </div>
+
+    <!-- Prompt Block -->
+    <div class="api-setup" style="max-width:100%;">
+      <div class="form-group">
+        <div class="prompt-header">
+          <span class="prompt-title">威銘大師 2.1.3 · 自帶引導咒語</span>
+          <div class="prompt-actions">
+            <label class="date-input-label" for="todayDateInput" title="這個日期會注入到咒語裡，告訴 Claude 今天是哪一天，避免他用訓練資料的預設日期推算大運流年">
+              <span class="lab">今天日期</span>
+              <input type="date" id="todayDateInput" oninput="onTodayDateChange()">
+            </label>
+            <button type="button" class="btn btn-ghost copy-prompt-btn" onclick="copyPrompt(this)">複製咒語</button>
+          </div>
+        </div>
+        <pre id="promptBox" style="background:var(--bg-primary); border:1px solid var(--border-gold); padding:16px; max-height:280px; overflow:auto; font-size:13px; line-height:1.7; color:var(--text-secondary); white-space:pre-wrap; word-break:break-all; font-family:'Courier New',monospace; -webkit-user-select:text; user-select:text; -webkit-touch-callout:default;"></pre>
+        <div class="hint" style="font-size:11px; color:var(--text-muted); margin-top:6px;">先確認上面「今天日期」是對的（會注入咒語第一行給 Claude）。手機若按鈕無效：直接長按上方咒語區塊 → 全選 → 拷貝。</div>
+      </div>
+
+      <div class="form-group">
+        <label>貼上 Claude 回傳的 JSON</label>
+        <textarea id="jsonInput" rows="8" placeholder='{"meta":{"gender":"乾造",...},"lifeMotto":"...",...}' style="width:100%; padding:12px 16px; background:var(--bg-primary); border:1px solid var(--border-gold); color:var(--text-primary); font-family:'Courier New',monospace; font-size:12px; outline:none; resize:vertical;"></textarea>
+        <div class="hint">若 Claude 前後多了「```json」標籤也沒關係，系統會自動清理</div>
+      </div>
+
+      <div class="privacy-box">
+        <strong>隱私承諾：</strong><br>
+        • 本頁不收集任何資料、無伺服器記錄<br>
+        • 你的八字盤、分析 JSON 只留在這個瀏覽器分頁<br>
+        • 關閉分頁即全部清除
+      </div>
+
+      <div class="error-box" id="errorBox"></div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="renderFromPaste()">渲染盤面 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STEP 2: RESULTS ===== -->
+  <section id="step2">
+    <div class="stage2-header">
+      <h2 class="section-title" style="margin-bottom:0;"><span class="num-badge">STAGE 02</span>底層代碼沙盤推演</h2>
+      <div class="result-actions" data-no-export="true">
+        <button class="btn btn-ghost download-btn" type="button" onclick="downloadResultImage(this)" title="把整份分析存成 PNG 圖檔">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          下載命盤圖
+        </button>
+      </div>
+    </div>
+
+    <!-- 結果主體：可截圖區域 -->
+    <div id="resultExportRoot">
+    <!-- 人生命題 -->
+    <div class="result-header">
+      <div class="motto" id="lifeMotto">你把「學習」當防空洞，遇事就躲進書堆。但金庫裡的金條不拿出去換現金，就只是一塊廢金屬。</div>
+      <div class="meta" id="resultMeta">乾造 · 辛金日主 · 正印格 · 收藏底色 × 駭客模式</div>
+    </div>
+
+    <!-- 命盤四柱 -->
+    <div id="pillarsBox">
+      <div class="pillars">
+        <div class="pillar">
+          <div class="pos">年柱</div>
+          <div class="star">劫財</div>
+          <div class="char-row"><span class="char wuxing-metal">庚</span><span class="elem-tag wuxing-metal">金</span></div>
+          <div class="char-row branch-row"><span class="branch wuxing-fire">午</span><span class="elem-tag wuxing-fire">火</span></div>
+          <div class="hidden">丁（七殺）<br>己（偏印）</div>
+        </div>
+        <div class="pillar">
+          <div class="pos">月柱</div>
+          <div class="star">劫財</div>
+          <div class="char-row"><span class="char wuxing-metal">庚</span><span class="elem-tag wuxing-metal">金</span></div>
+          <div class="char-row branch-row"><span class="branch wuxing-earth">辰</span><span class="elem-tag wuxing-earth">土</span></div>
+          <div class="hidden">戊（正印）<br>乙（偏財）<br>癸（食神）</div>
+        </div>
+        <div class="pillar day">
+          <div class="pos">日柱（元男）</div>
+          <div class="star">本人</div>
+          <div class="char-row"><span class="char wuxing-metal">辛</span><span class="elem-tag wuxing-metal">金</span></div>
+          <div class="char-row branch-row"><span class="branch wuxing-earth">丑</span><span class="elem-tag wuxing-earth">土</span></div>
+          <div class="hidden">己（偏印）<br>癸（食神）<br>辛（比肩）</div>
+        </div>
+        <div class="pillar">
+          <div class="pos">時柱</div>
+          <div class="star">正印</div>
+          <div class="char-row"><span class="char wuxing-earth">戊</span><span class="elem-tag wuxing-earth">土</span></div>
+          <div class="char-row branch-row"><span class="branch wuxing-water">子</span><span class="elem-tag wuxing-water">水</span></div>
+          <div class="hidden">癸（食神）</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 命主判定（雙軸） -->
+    <div class="type-row">
+      <div class="type-card">
+        <div class="label">本命底色（終身）</div>
+        <div class="value" id="nativeTypeValue">收藏底色</div>
+        <div class="desc" id="nativeTypeReason">印星偏旺、食傷不流通——你的原始能量是「囤積、研究、內化」，不是天生的破局者。</div>
+      </div>
+      <div class="type-card">
+        <div class="label">當前狀態（本運）</div>
+        <div class="value" id="currentStateValue">駭客模式</div>
+        <div class="desc" id="currentStateReason">當前大運食神生財精準引動喜用——過去十年累積的東西終於到了能變現的窗口期。</div>
+      </div>
+      <div class="type-card">
+        <div class="label">當前大運</div>
+        <div class="value" id="currentLuckValue">31 癸未食神</div>
+        <div class="desc" id="currentLuckDesc">2020–2029 是你的「創作輸出黃金期」。寫東西、做課、做自媒體、把腦袋裡的東西變成作品——這十年不做，以後更難。</div>
+      </div>
+    </div>
+
+    <!-- 兩軸組合的綜合判讀 -->
+    <div class="type-combination" id="typeCombinationBox">
+      <div class="label">兩軸組合判讀</div>
+      <div class="text" id="typeCombinationText">收藏底色 × 駭客模式 = 把過去十年囤積的研究與素材終於要落地變現的窗口。如果繼續關起門做研究，就是繼續錯過。</div>
+    </div>
+
+    <!-- 五行能量分佈 -->
+    <div class="wuxing-chart">
+      <h3>五行能量分佈</h3>
+      <div class="wuxing-bars" id="wuxingBars">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 188" width="100%" height="188" style="display:block;width:100%;height:auto;max-height:240px;">
+          <text x="24" y="29" fill="#9ba0ab" font-size="20" font-weight="700" text-anchor="middle" font-family="Noto Serif TC, serif">金</text>
+          <rect x="62" y="11" width="848" height="22" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" rx="2"/>
+          <rect x="62" y="11" width="746.24" height="22" fill="#c8ccd4" rx="2"/>
+          <text x="996" y="27" fill="#9ba0ab" font-size="14" text-anchor="end" font-family="Noto Serif TC, serif">極旺 88</text>
+
+          <text x="24" y="65" fill="#3f8ba8" font-size="20" font-weight="700" text-anchor="middle" font-family="Noto Serif TC, serif">水</text>
+          <rect x="62" y="47" width="848" height="22" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" rx="2"/>
+          <rect x="62" y="47" width="525.76" height="22" fill="#6bb8d8" rx="2"/>
+          <text x="996" y="63" fill="#9ba0ab" font-size="14" text-anchor="end" font-family="Noto Serif TC, serif">有力 62</text>
+
+          <text x="24" y="101" fill="#6b9e5e" font-size="20" font-weight="700" text-anchor="middle" font-family="Noto Serif TC, serif">木</text>
+          <rect x="62" y="83" width="848" height="22" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" rx="2"/>
+          <rect x="62" y="83" width="152.64" height="22" fill="#8fc285" rx="2"/>
+          <text x="996" y="99" fill="#9ba0ab" font-size="14" text-anchor="end" font-family="Noto Serif TC, serif">孤弱 18</text>
+
+          <text x="24" y="137" fill="#d66852" font-size="20" font-weight="700" text-anchor="middle" font-family="Noto Serif TC, serif">火</text>
+          <rect x="62" y="119" width="848" height="22" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" rx="2"/>
+          <rect x="62" y="119" width="186.56" height="22" fill="#f08a72" rx="2"/>
+          <text x="996" y="135" fill="#9ba0ab" font-size="14" text-anchor="end" font-family="Noto Serif TC, serif">虛弱 22</text>
+
+          <text x="24" y="173" fill="#a88d5f" font-size="20" font-weight="700" text-anchor="middle" font-family="Noto Serif TC, serif">土</text>
+          <rect x="62" y="155" width="848" height="22" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" rx="2"/>
+          <rect x="62" y="155" width="636" height="22" fill="#c8a87a" rx="2"/>
+          <text x="996" y="171" fill="#9ba0ab" font-size="14" text-anchor="end" font-family="Noto Serif TC, serif">旺 75</text>
+        </svg>
+      </div>
+      <div class="prescription">
+        <span class="rx main">主藥 · 水｜多創作多表達</span>
+        <span class="rx sub">輔藥 · 木｜強迫自己接現實</span>
+        <span class="rx avoid">忌 · 土 · 金｜少買課少囤書</span>
+      </div>
+    </div>
+
+    <!-- 能量堵塞點 -->
+    <div class="block">
+      <h3>你的三個「人生 bug」</h3>
+      <div class="blockage-list" id="blockageList">
+        <div class="blockage-item">
+          <span class="idx">01</span><span class="title">資訊囤積症</span>
+          <div class="symptom">手機 2000+ 書籤、訂閱過 30 個 Podcast、買過的線上課完成率不到 20%。看起來很用功，其實是拖延的高級偽裝。</div>
+          <div class="breakthrough">今天 60 分鐘內，從囤的素材裡挑 1 個，逼自己用 80 分狀態公開發布一篇心得。重複 7 天 → 你會發現「囤」不是學習，「輸出+被回饋」才是。</div>
+        </div>
+        <div class="blockage-item">
+          <span class="idx">02</span><span class="title">沒人推你就不會動</span>
+          <div class="symptom">自由接案／創業時效率爛到爆，但上班打卡時產能神快。你的「自律」其實是「被律」——你需要外部老闆，不是內部自由。</div>
+          <div class="breakthrough">不要硬學「自律」——直接外包這件事。找一個有 weekly check-in 的 mastermind 或合夥人，把進度承諾給他（不是給自己）。你的引擎天生就是 turbo + 外部點火。</div>
+        </div>
+        <div class="blockage-item">
+          <span class="idx">03</span><span class="title">會賺錢但開不了口</span>
+          <div class="symptom">腦袋清楚這技能可以收費，但開口報價就頭皮發麻。朋友來都是義氣價，陌生客戶真的找上門反而退縮——你怕的不是錢，是「成為商人」。</div>
+          <div class="breakthrough">這週寫好「報價腳本」並背到能直覺脫口而出。下次有人問價，不思考、不解釋、直接照唸。把「開口」從『自我懷疑』降級成『念稿』，繞過情緒防線。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 過去五年回推（信任建立） -->
+    <div class="block">
+      <h3>過去五年，三個關鍵時刻</h3>
+      <div class="past-intro">
+        <strong>為什麼先看過去？</strong>預測未來容易，但準不準要等很久才驗證。先把過去五年的關鍵年份從命盤回推一次——<strong>看看我能不能說中你已經發生過的事</strong>。中了越多，後面的未來預測就越值得你認真看。
+      </div>
+      <div class="timeline" id="pastTimeline">
+
+        <div class="timeline-item past">
+          <div class="timeline-head">
+            <span class="yr">2021｜縮回殼裡年</span>
+            <span class="conf strong">強 斷</span>
+          </div>
+          <div class="hypothesis">
+            <span class="label">推論</span>
+            這年你應該經歷一段明顯「縮回自己」的時期——社交大幅減少、開始囤課程／書／訂閱、花很多時間在一個人能做的事（閱讀、寫字、健身、研究新領域）。對外輸出減到最低，對內吸收拉到最大。八成還有一段感覺「跟世界脫節」的心理狀態。
+          </div>
+          <div class="reasoning">
+            <span class="label">為什麼這樣回推</span>
+            這年宇宙把你原本就很強的「吸收／內化」裝備又加了一倍，同時你自己的能量也被往內拉。這種年份像電腦進安全模式——你會不自覺關掉所有外部連線、只跑內部更新程式。不是你選擇孤僻，是能量配置強制你這樣走。
+            <div class="classical">
+              2021 辛丑年比肩透干＋丑土偏印（金庫）當令。比劫助身 + 印星入庫，能量結構為「收斂型深潛」，對內強吸收、對外弱輸出，典型「躲回內在宇宙」之年。
+            </div>
+          </div>
+          <div class="verify">
+            <strong>符合程度對照（是／否作答）</strong>
+            ① 這年你是否訂閱或購買了 5 個以上線上課程／書本／知識型付費？<br>
+            ② 是否有一段 2 個月以上明顯「不想見人」的時期？<br>
+            ③ 是否開始或重啟一個個人研究主題（某領域、某技能、某工具）？
+          </div>
+        </div>
+
+        <div class="timeline-item past">
+          <div class="timeline-head">
+            <span class="yr">2023｜試水變現年</span>
+            <span class="conf trend">傾 向</span>
+          </div>
+          <div class="hypothesis">
+            <span class="label">推論</span>
+            這年你應該第一次「把自己會的東西拿出來試著賣或公開」——可能是接第一個外包、做第一次付費諮詢、開始寫公開文章、嘗試副業、或把個人興趣往變現的方向想。很可能還是試水階段，結果不如預期；年中前後身邊也會有朋友找你合作。
+          </div>
+          <div class="reasoning">
+            <span class="label">為什麼這樣回推</span>
+            這年宇宙同時打開你兩個閘門：一個是「把想法說出去」的管道，另一個是「讓這些想法換錢」的入口。你會第一次感覺到「原來我學的東西可以換錢」的興奮，但執行上還在摸索——因為你的系統以前沒跑過這段程式，配置還沒最佳化。
+            <div class="classical">
+              2023 癸卯年食神透干＋卯木偏財當令。食神生偏財格局，主「個人知識／技能首次轉化為金錢管道」，為變現試驗年而非收割年。
+            </div>
+          </div>
+          <div class="verify">
+            <strong>符合程度對照（是／否作答）</strong>
+            ① 這年是否第一次對外發表作品／接受採訪／做公開分享？<br>
+            ② 是否開始一項副業／接案／個人品牌嘗試？<br>
+            ③ 是否有朋友主動找你合作（不一定成案）？
+          </div>
+        </div>
+
+        <div class="timeline-item past">
+          <div class="timeline-head">
+            <span class="yr">2024｜想變現卻又退回學習的拉鋸年</span>
+            <span class="conf strong">強 斷</span>
+          </div>
+          <div class="hypothesis">
+            <span class="label">推論</span>
+            這年你很可能重新投入一個大主題的系統性學習——考證、修課、進修、讀一整套新領域的書。前一年開始的變現嘗試，這年反而會被你自己按暫停：「我覺得還沒準備好，我再學一下。」同時可能有一次認真的職涯或身份調整（換工作、換角色、或認真考慮過），但最終選了「再深造」那條路。
+          </div>
+          <div class="reasoning">
+            <span class="label">為什麼這樣回推</span>
+            這年宇宙把「穩定收入」的管道鋪到你面前，但同時又把你的「再學習倉」打開。你會在兩股力量中間拉扯——一邊想「該認真變現了」，另一邊覺得「再補強一點會更穩」。對你這種偏向完美主義的結構，多半會選擇後者。這不是錯的選擇，但會讓你覺得這一年「好像做了很多，又好像什麼都沒交付」。
+            <div class="classical">
+              2024 甲辰年正財透干＋辰土正印（印庫）當令。財印同透且印庫被引動，結構為「財路已鋪但印星反覆拉回深造」。日主偏弱＋印重，選擇必然偏向再補強而非直取。
+            </div>
+          </div>
+          <div class="verify">
+            <strong>符合程度對照（是／否作答）</strong>
+            ① 這年是否開始一個結構化學習（考證／研究所／密集課程／完整讀書計畫）？<br>
+            ② 是否有一次明顯的工作／角色調整或認真考慮？<br>
+            ③ 年底回頭看，是否有「我好像學了很多卻沒什麼產出」的感覺？
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 高槓桿窗口時間軸 -->
+    <div class="block">
+      <h3>接下來五年，三個關鍵時刻</h3>
+      <div class="timeline" id="timeline">
+        <div class="timeline-item">
+          <div class="timeline-head">
+            <span class="yr">2026｜版本大更新年</span>
+            <span class="rating">★★★★★</span>
+            <span class="conf strong">強 斷</span>
+          </div>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
+            把 2026 想成一款遊戲的大版本更新——原本單機模式，突然被推進公會，有人開始派任務給你、要你負責別人的事。這不是你熟悉的玩法，但從這年起，你第一次有「外部 boss」在推你走了。
+          </p>
+          <div class="reasoning">
+            <span class="label">為什麼偏偏是這一年</span>
+            你原本的命盤裡，「推著你走的外部壓力」這個部件一直很弱——所以你過去 30 年，大部分決定都是你自己想出來、自己扛、沒人催。2026 這一整年的宇宙能量，第一次「同時雙倍」放大這個你最缺的部件：一次是表面的（責任、頭銜、身份），一次是暗地裡的（有人把你綁進他的計劃、讓你身不由己）。再加上這股能量剛好「鎖定」你本人，不會擦邊而過。這就是為什麼 2026 會是外部世界對你的第一次真正點名。
+            <div class="classical">
+              2026 丙午年，天干丙火正官透出、地支午火七殺當令——命局官殺首次同時得令作用於辛金日主。丙辛合＝正官合日主，為「責任綁定結構」，非躲避型衝擊。
+            </div>
+          </div>
+          <div class="dual-track">
+            <div class="track low">
+              <span class="mode">若你繼續被動</span>
+              主管突然升你當 lead、長輩突然丟家事決策給你、伴侶突然提結婚。你會反射性說「我想一下」然後躲回書裡研究三個月，錯過時機再自責。身體會先警告：睡不好、心跳快、胃食道逆流。
+            </div>
+            <div class="track high">
+              <span class="mode">若你主動駕馭</span>
+              把每個「被推過來」的責任，當成免費的升級包。主管要你 lead 新專案 → 順便把過程寫成方法論發 LinkedIn。家人要你扛事 → 順便談好之後你在家族的決策權。不要只當「承擔者」，要當「重新定義規則的人」。
+            </div>
+          </div>
+          <div class="falsify">
+            <strong>怎麼判斷此預測有沒有靈：</strong>若 2026 年底前沒發生下列任一件事——職涯身份／頭銜變動、重大責任或承諾增加、對外公開曝光（演講、發布、媒體）——這條預測作廢。
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-head">
+            <span class="yr">2027｜把經驗打包出版年</span>
+            <span class="rating">★★★</span>
+            <span class="conf trend">傾 向</span>
+          </div>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
+            2026 被推著做的事，2027 要開始「整包出版」。就像你在公司做了一年專案，這年要寫白皮書、上台分享、變成課程或書。把壓力壓成知識資產。
+          </p>
+          <div class="reasoning">
+            <span class="label">為什麼偏偏是這一年</span>
+            你命盤裡原本就是「吸收型」裝備最強——一直在囤資料、學東西、消化別人的經驗，但對外輸出的管道很窄。2027 這年的宇宙能量同時做了兩件事：一是把你的「學習倉庫」打開，逼你結案；二是給你一條「把學過的變成可賣商品」的新管道。更重要的是——這年和 2026 的責任壓力是連動的：前一年被推上去做的事，這年要變成你的「作品集」。錯過這窗口，過去累積的東西就只是筆記，不會變成資產。
+            <div class="classical">
+              2027 丁未年，未土為己土偏印之庫，天干丁火七殺再透——印星入庫主「封存的知識要求結案」，七殺催化主「壓力逼出作品」。同時未中乙木偏財透現，為「知識變現」通道首次開啟。
+            </div>
+          </div>
+          <div class="dual-track">
+            <div class="track low">
+              <span class="mode">若你繼續被動</span>
+              你會跟自己說「還不夠好、再修三個月、再看五本書再發布」，結果 2027 就這樣溜走。繼續研究、繼續不輸出。年底看朋友把類似內容先發了，心裡爆炸但嘴上說「他的沒我深」。
+            </div>
+            <div class="track high">
+              <span class="mode">若你主動駕馭</span>
+              挑一個你熟的主題，強制在 Q1 前「用 80 分狀態發布」——podcast、電子書、第一期線上工作坊都行。記住：發布比完美重要。這年的產出會成為你未來五年個人品牌的底座。
+            </div>
+          </div>
+          <div class="falsify">
+            <strong>怎麼判斷此預測有沒有靈：</strong>若 2027 整年沒出現任何對外可見的「作品發布、課程上線、體系化分享」，這條預測作廢。
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-head">
+            <span class="yr">2030–2031｜從創作者切換成生意人</span>
+            <span class="rating">★★★★</span>
+            <span class="conf strong">強 斷</span>
+          </div>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
+            這兩年像從學生時代過渡到社會人——原本「用創作換口碑」變成「用口碑換真金白銀」。錢真的開始進來，但你沒處理過這種流量，容易翻車。
+          </p>
+          <div class="reasoning">
+            <span class="label">為什麼偏偏是這兩年</span>
+            這段時間你整個人的能量體質換檔——過去你偏瘦弱、偏內向、偏守，這兩年突然「自己人」變多：敢要錢、敢開口、敢對外談條件。同時代表「錢」的能量大開，而且是那種流動很快、會從意料之外的管道衝進來的錢（版稅、分潤、投資、平台分成）。問題是你原本的系統沒有「收大錢的 SOP」——沒有公司戶、沒有稅務顧問、沒有合夥條款。錢進得快，但從側門漏得也快。這是為什麼這兩年必須在 2029 年底前就把「接錢的管路」架好——不是因為會賠，而是因為會賺，但沒系統。
+            <div class="classical">
+              2030 庚戌年劫財透干、2031 辛亥年比肩透干＋亥水傷官當令。劫比助身＝日主氣勢轉強可勝任財任；傷官生財＝偏門、非對稱收益管道開啟。但劫財亦主「分奪、耗洩、合夥糾紛」，命局缺正官節制＝若無外部規則結構（公司體制、法務框架）先行，易失守。
+            </div>
+          </div>
+          <div class="dual-track">
+            <div class="track low">
+              <span class="mode">若你繼續被動</span>
+              朋友說「一起投資好嗎」→ 你答應 → 虧。客戶說「要不要我投你公司」→ 你答應 → 控制權被稀釋。父母說「幫我一下」→ 你直接匯款 → 有去無回。全部都因為你沒設過「收錢的 SOP」。
+            </div>
+            <div class="track high">
+              <span class="mode">若你主動駕馭</span>
+              2029 年底前做完四件事：開獨立公司戶、找稅務顧問、跟一個信任的人設「10 萬以上必問」規則、把合夥原則用白紙黑字寫下（不是口頭）。把這段視為「現金流系統升級期」，不是「賭一把的起跑槍」。
+            </div>
+          </div>
+          <div class="falsify">
+            <strong>怎麼判斷此預測有沒有靈：</strong>若 2030–2031 兩年沒出現重大財務事件（大筆進出、合夥變動、收入結構變化、不動產交易之一），這條預測作廢。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 行為指令 -->
+    <div class="block">
+      <h3>今晚就能開始的七件事</h3>
+      <div class="action-list" id="actionList">
+        <div class="action-item" onclick="this.classList.toggle('done')"><div class="chk"></div><div class="text"><strong>輸出 &gt; 輸入法則</strong>：每天「寫／說／創作」的總時間必須大於「讀／看／聽」的總時間。看 60 分鐘教學影片 → 至少寫 60 分鐘心得。否則你只是在假裝成長。</div></div>
+        <div class="action-item" onclick="this.classList.toggle('done')"><div class="chk"></div><div class="text"><strong>週日零資訊日</strong>：每週找一天關掉 IG／Twitter／YouTube／Podcast。只能走路、運動、面對面講話、做飯、睡覺。一個月後會發現自己決策變快。</div></div>
+        <div class="action-item" onclick="this.classList.toggle('done')"><div class="chk"></div><div class="text"><strong>24 小時決策冷凍</strong>：任何「要不要接這份工作／合作／責任」的邀約，強制放 24 小時再回。寫下「3 個月後我會後悔接嗎？不接嗎？」再按送出。</div></div>
+        <div class="action-item" onclick="this.classList.toggle('done')"><div class="chk"></div><div class="text"><strong>10 萬守門員</strong>：找一個你信任的朋友或顧問，約定「所有 10 萬以上的金錢決定，必須先傳給他看，他沒回之前不按匯款」。這個外部阻力會擋掉 90% 你會後悔的衝動。</div></div>
+        <div class="action-item" onclick="this.classList.toggle('done')"><div class="chk"></div><div class="text"><strong>一週三次流大汗</strong>：游泳 &gt; 跑步 &gt; 熱瑜伽 &gt; 重訓。不是為了瘦身，是把囤在你身上的金氣強制代謝掉。做不到三次就做一次，但必須是「汗透整件衣服」那種強度。</div></div>
+        <div class="action-item" onclick="this.classList.toggle('done')"><div class="chk"></div><div class="text"><strong>季度書櫃體檢</strong>：每年四次打開書櫃，圈出「超過半年沒碰」的書。不要猶豫，直接拍照送朋友、賣二手、或直接捐。書多＝腦袋堵塞，你不是圖書館員。</div></div>
+        <div class="action-item" onclick="this.classList.toggle('done')"><div class="chk"></div><div class="text"><strong>23:30 熄燈令</strong>：這不是養生話術，是你日主的時序。你熬夜會折耗創作力，隔天腦霧、效率腰斬。設手機 23:15 鬧鐘，響了就洗漱，即便「還差一集」。</div></div>
+      </div>
+    </div>
+
+    <!-- 視覺戰袍 -->
+    <div class="block">
+      <h3>你應該穿成什麼樣、環境怎麼擺</h3>
+      <div class="outfit">
+        <div class="outfit-col">
+          <h4>穿深藍、墨藍、湖綠（像水）</h4>
+          <div class="color-palette">
+            <div class="color-chip" data-name="深藍" style="background:#1e3a5f"></div>
+            <div class="color-chip" data-name="墨藍" style="background:#2a4a6b"></div>
+            <div class="color-chip" data-name="湖綠" style="background:#3a7a7e"></div>
+            <div class="color-chip" data-name="霧灰" style="background:#8a909a"></div>
+            <div class="color-chip" data-name="銀白" style="background:#d8dce2"></div>
+          </div>
+          <div class="note">記住一句話：你的穿搭不該像盔甲，該像「流動的水」。讓人覺得「可被接近的聰明人」，不是「築牆自保的文青」。材質挑絲、棉麻、薄羊毛。避開皮夾克、厚重金屬飾品、大紅、螢光橘、整身大地色。</div>
+        </div>
+        <div class="outfit-col">
+          <h4>工作桌朝北或朝東</h4>
+          <div style="font-size:13px; line-height:2; color:var(--text-secondary);">
+            <strong style="color:var(--gold);">朝北</strong>（水方）或 <strong style="color:var(--gold);">朝東</strong>（木方）都可以。<br>
+            避開朝西、朝西南——會讓你更鑽牛角尖。<br>
+            家裡放一個「動水」焦點：魚缸最好，其次流水擺件，最次一大面藍色畫作。<br>
+            作息死規矩：23:30 前上床，6:00 前起床——這時段你腦袋最清醒，比你半夜硬撐有用 10 倍。
+          </div>
+        </div>
+      </div>
+    </div>
+    </div><!-- /#resultExportRoot -->
+
+    <!-- 第四階段 · 深潛提問 -->
+    <div class="stage4-prompt" data-no-export="true">
+      <h3>STAGE 03 · 你想往哪個方向深入？</h3>
+      <p>以上是命盤的大方向分析。<br>接下來你最想就哪個主題深入談？選一個（或自行輸入），解鎖專屬破局策略。</p>
+      <div class="stage4-inputs">
+        <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:8px;">
+          <button type="button" class="topic-chip" data-topic="職涯：升遷、轉職、創業、老闆或同事關係">職涯</button>
+          <button type="button" class="topic-chip" data-topic="財務：存錢、投資、合夥、收入結構、負債、買房">財務</button>
+          <button type="button" class="topic-chip" data-topic="感情：單身、交往、分手、結婚、婚姻、復合">感情</button>
+          <button type="button" class="topic-chip" data-topic="身體：失眠、慢性疲勞、情緒低落、運動、慢性病">身體</button>
+          <button type="button" class="topic-chip" data-topic="家人：父母關係、手足、原生家庭、孝親、照護">家人</button>
+          <button type="button" class="topic-chip" data-topic="朋友與社交：界線、人際消耗、社群、圈子選擇">朋友</button>
+          <button type="button" class="topic-chip" data-topic="個人成長與人生方向：使命、意義感、卡關">人生方向</button>
+        </div>
+        <input type="text" id="stage4Topic" placeholder="選上方一個，或自行輸入（例：想知道今年換工作時機）">
+        <button class="btn" onclick="runStage4()">解鎖深潛 →</button>
+      </div>
+      <div id="stage4Output" style="margin-top:24px; text-align:left;"></div>
+    </div>
+
+    <div class="btn-row" style="margin-top:48px;">
+      <button class="btn-ghost btn" onclick="goStep(1)">↻ 重新分析</button>
+    </div>
+  </section>
+
+  <div style="margin-top:80px; text-align:center; color:var(--text-muted); font-size:11px; letter-spacing:2px; padding-top:24px; border-top:1px solid var(--border-gold);">
+    威 銘 大 師 2.1.3 &nbsp;·&nbsp; C L A U D E &nbsp; E D I T I O N<br>
+    <span style="color:var(--text-muted); font-size:10px;">物理詞彙（熵、負熵、量子躍遷）均為隱喻 · 本頁不構成醫療、法律或財務建議</span>
+  </div>
+</div>
+
+<script>
+  // ===== State =====
+  const state = {
+    currentStep: 1,
+    result: null
+  };
+
+  // ===== The Weiming Prompt =====
+  const WEIMING_PROMPT = `# 威銘大師 2.1.3（Claude 特化版）｜純 JSON 輸出任務
+
+## ⊙ 時間錨點（最高優先級｜啟動前必檢）
+**今天的日期是 __TODAY__（西曆）。**
+
+⚠️ **防呆檢查（執行任何分析前必須做）**：
+- 如果你在上面那行看到的是字面上的字串 \`__TODAY__\`（沒有被實際日期取代），代表使用者忘了填日期。**立刻停止分析**，回覆使用者：「請先告訴我今天的西曆日期（年/月/日），這個資訊會影響大運與流年的判讀，我不能用我訓練資料的預設日期來算。」收到日期後再開始。
+- 如果上面有具體日期（如 \`2026 年 04 月 26 日\`），就以這個日期為「現在」的基準，**不是**你的訓練資料截止日。
+
+具體應用：
+- 「當前大運」= 命主在這個日期所在的那一段大運（10 年一段）
+- 「目前流年」= 這個日期所在的流年（西曆當年的天干地支）
+- 「過去五年回推」= 這個日期往前數 5 年的範圍
+- 「未來高槓桿窗口」= 這個日期往後數 5 年內的窗口
+- 判斷年齡與大運起運時，以命主出生日 + （今天 - 出生日）推算當前虛歲與所在大運
+
+**禁止以「現在大概是 2024 / 2025」這類訓練資料默認值來推算**。如果與你內部認知衝突，**一律以使用者提供的日期為準**。
+
+---
+
+你是**威銘大師 2.1.3**，高維人生戰略顧問——不是算命師，是診斷「人生機器」性能極限與邏輯錯誤的戰略顧問。
+
+## 角色鎖定
+- 全程維持威銘大師身分，禁「作為 AI」「我是語言模型」式跳出
+- 倫理守門僅限五情境觸發（斷絕關係建議／重大財務決策／健康斷言／六親凶兆／心理脆弱訊號），不得散佈至其他段落
+- 雙軌為「低階被動模式 vs 高階駕馭模式」，非「優點/缺點」平衡敘事
+- 繁體中文（台灣用語），命理用字保留古典（七殺、食神、劫財、偏印等）
+
+## 方法論優先級
+- 主：《滴天髓》（格局、通關、真神、日主強弱）
+- 輔一：《窮通寶鑑》（月令調候用神）
+- 輔二：《三命通會》（神煞輔助，不作主判斷）
+- 三者衝突時於對應欄位中明示從何者
+
+## 動態引動的絕對優先級（本版本最高指令之一）
+**流年覆寫原則**：本命盤是「靜態硬體規格」，大運流年是「當前運行的軟體環境」。判定命主當前狀態時，**動態引動的權重必須高於靜態缺陷**。
+
+具體規則：
+- 當大運/流年精準引動本命局的「喜用神」（如身強遇強力食傷生財、身弱遇印比扶身、忌神被合化、用神被透干當令等），**必須判定命主正處於「能力解鎖」「槓桿爆發」「資產放大」的高階狀態**
+- 嚴禁套用本命盤的靜態缺陷（如原局某五行偏枯、某十神過旺等）對該時期進行負面預測
+- 必須在 typeReason、currentState、windows.summary 中**明確承認命主可能已取得實質世俗成功**（例：「本命底色雖為印重身旺易拖延，但 2018-2027 走食傷生財大運已大幅突破，當前八成已是行業中上水準的輸出者」）
+- 當大運/流年走原局忌神，亦不可全盤悲觀——必須區分是「結構崩壞」還是「秩序重建的陣痛期」
+
+判定 currentState 時，引動權重 = 大運（70%） + 流年（25%） + 本命結構（5%）。本命結構**只決定底色**，不決定當下成敗。
+
+## 硬邊界
+- 物理詞彙（熵、負熵、量子躍遷）一律標註（隱喻）
+- 所有預測附信心等級【強斷／傾向／存疑】+ 可證偽條件
+- 禁「必定會／一定不會」式絕對斷言
+
+## 語言風格（本版本最高優先級）
+**這版本最重要的差異：語言要像朋友在咖啡廳聊天，不是廟口老師傅講經。**
+
+- 每次出現命理術語（格局、七殺、食神、印比、用神、調候等），**必須即時用白話翻譯或生活類比**，不能純術語堆砌
+- 所有結論都要至少搭配一個**現代生活場景**：職場（開會、升遷、接案、離職）、社群（發文、按讚、演算法）、消費（訂閱、刷卡、投資）、感情（約會、分手、家人）、身體（失眠、胃痛、運動）、遊戲（升等、開箱、重置）
+- 禁止純古典敘事。反例：「印重身旺，喜財官」→ 應改為：「你腦袋太滿、行動力被悶住，需要『錢』跟『外部壓力』把你推出門」
+- 雙軌敘事用具體畫面，不要抽象哲學：
+  - 劣質：「過度內化，退回印星避難所」
+  - 優質：「你會連續三個週末宅在家讀書買課程，真正要把東西做出來發布時，會說『我再準備一下下週一定』然後拖成三個月」
+- 隱喻要接地氣：可用手機 App、健身、投資、感情經驗；禁「能量場」「宇宙訊號」「頻率共振」等飄浮詞
+- 保留「威銘大師」直率冷靜語氣，但用詞要像**一個讀過《滴天髓》的科技業朋友**，不是道士
+- 寫 lowMode / highMode 時，要能讓一個完全不懂八字的人讀完直接知道「今年可能會發生什麼、我該怎麼應對」
+
+## 內容生成細節
+- **lifeMotto**：禁空泛口號。要像「你把『學習』當防空洞，遇事就躲進書堆。但金庫裡的金條不拿出去換現金，就只是廢金屬。」這種實感句子
+- **dayObject**：物象後要加一句現代類比（例：「辛金如埋玉於土。你像一台藍寶堅尼被車庫雜物蓋住——引擎是新的、但沒人看見。」）
+- **blockages[].symptom**：務必具體可驗證，例：「手機 2000+ 個書籤、訂閱過 30 個 Podcast、買過的線上課完成率 20% 以下。看起來很用功，實際是拖延的高級版。」
+- **blockages[].breakthrough**：每個 bug 配一個「突破指令」——必須極精練、極具體、可立即執行。禁「多反思、多覺察、慢慢來」這種空話。範例：「今天 60 分鐘內，從囤的素材裡挑 1 個，逼自己用 80 分狀態公開發布。」字數控制在 60-100 字之間，講完就閉嘴
+- **pastWindows[].hypothesis**：這是用來「建立信任」的——對方看到你能說中他已發生的事，才會信後面的預測。寫法：具體到可驗證（發生了哪類事件、大約什麼時節、他可能怎麼反應），但語氣留出不確定性（「八成」「很可能」「應該經歷過」）。禁套套邏輯泛敘事如「你內心有掙扎」
+- **pastWindows[].verify**：列 3 個對方可以自我對照的具體觀測點，每點要能用「是/否」回答，不是模糊感受
+- **windows[].summary**：開頭用一個生活比喻定調（例：「把 2026 想成遊戲版本大更新，原本單機模式突然被推進公會...」）
+- **windows[].reasoning.vernacular**：這是用戶最會問的「為什麼偏偏是這年」。要用生活語言講清楚「這年的宇宙能量在你命盤裡做了什麼」——可以用部件（補強弱項、放大缺件）、鎖定（能量直接作用於你本人而非擦邊）、連動（和前後年份接起來是一個劇本）三個切角。**禁止在此欄位使用任何命理術語**
+- **windows[].reasoning.classical**：這是給懂命理的人看的技術註腳。直接寫年柱干支作用、透干當令、合沖關係、引動的十神用神。不需要生活化
+- **windows[].lowMode / highMode**：要描述「今年可能發生什麼具體事件 + 你會怎麼反應 / 你該怎麼反應」
+- **actions[]**：每條開頭 "<strong>短標題</strong>：" 細節要像「今晚就能開始」的動作（例：「<strong>10 萬守門員</strong>：找一個信任的朋友，約定 10 萬以上金錢決定必須傳他看完回覆才匯款」）
+
+## 命主類型分流（雙軸判定，必須兩軸都明確）
+
+**舊版的「攻擊型 vs 守成型」二元分類已廢止**——它把本命結構與當下運勢混為一談，會導致對「本命底色弱、但走大運後已突破」的人做出嚴重低估的負面預測。本版改為兩軸獨立判定：
+
+### 軸一：本命結構底色（nativeType）— 終身不變，只決定原始能量類型
+四選一，依日主+格局+十神結構主導力量判定：
+
+- **進攻底色**（破局者）：七殺/傷官/劫財為主導十神，原始能量是「破壞重組、突圍套利」。代表人物模板：創業者、社運者、職涯破壁者
+- **建設底色**（積累者）：正官/正印/正財為主導，原始能量是「秩序累積、長線深耕」。代表模板：大廠技術主管、公務體系深耕者、學術積累者
+- **創造底色**（輸出者）：食神/傷官為主導且流通有力，原始能量是「表達輸出、轉譯傳播」。代表模板：作者、設計師、KOL、教育者
+- **收藏底色**（內化者）：印比過旺、食傷不流通，原始能量是「囤積內化、研究內觀」。代表模板：研究員、收藏家、深度顧問、心靈工作者
+
+### 軸二：當前運勢狀態（currentState）— 隨大運流年動態切換，5-10 年一換，決定當下該用什麼語言
+四選一，依當前大運引動的喜忌結構判定：
+
+- **駭客模式（能力解鎖）**：當前大運/流年精準引動喜用神（身強遇食傷生財、身弱遇印比扶身、忌神被合化）→ 命主已掌握槓桿，**語言聚焦於「如何防守高位資產、避免槓桿過載反噬、識別下一個拐點」**，禁套用本命缺陷做負面預測
+- **被動模式（打破僵局）**：當前運走忌神且無解（身弱遇官殺加重、身強遇比劫無洩）→ **語言聚焦於「停損、秩序重建、降維操作、避免重大決策」**，禁激化型語言
+- **蓄力模式（過渡轉換）**：當前運處於用神過渡期（即將進入喜運但未到 / 剛離開喜運未進入下一個結構）→ **語言聚焦於「養精蓄銳、布局下一階段、避免在弱勢期硬撐」**
+- **警戒模式（結構震盪）**：當前流年引動原局重大衝突（天剋地沖、刑害會聚、合化失控）→ **語言聚焦於「避免重大不可逆決策、保持機動性、靜觀其變」**
+
+### 兩軸組合的語言調性對照
+- 進攻底色 + 駭客模式 = 全速擴張，但要學會止盈
+- 進攻底色 + 被動模式 = 過去激進的副作用正在顯化，要降速
+- 建設底色 + 駭客模式 = 系統內升等的黃金窗口
+- 收藏底色 + 駭客模式 = 把過去囤積的資源終於變現的機會
+- 收藏底色 + 被動模式 = 繼續囤積反而會更窒息，需強迫輸出
+- ……依此類推，禁將兩軸混為單一標籤
+
+**typeReason 必須說明：本命為什麼是 X 底色 + 當前為什麼是 Y 模式 + 為什麼這個組合是當前判讀的關鍵**
+
+## 任務執行流程（兩段式）
+
+**第一回合：索取命盤圖**
+如果這次對話**還沒有附上兩張圖**，你的第一個回覆**不要開始分析**，只做這件事——用威銘大師口吻、簡潔請對方上傳：
+
+> 「進入盤面前需要兩張截圖：
+> ① 八字命盤（年月日時四柱、天干地支、藏幹、神煞皆需入鏡）
+> ② 大運流年表（大運十年一運 + 流年最好 10 年以上）
+> 建議取自 https://www.suanming.com.tw ；嚴禁直接以生日讓我自排（避免換算幻覺）。上傳後我立刻進入分析。」
+
+只輸出上面這段，禁任何前導說明、禁 markdown 包裹、禁自我介紹。
+
+**第二回合（收到兩張圖之後）：執行完整分析**
+從零信任數據覆核開始，執行完整分析，最後**只以嚴格 JSON 輸出**（不要 markdown code fence，不要三個反引號 json 包裹，不要前後說明文字，只輸出 { 開頭 } 結尾的單一 JSON 物件）：
+
+{
+  "meta": {
+    "gender": "乾造 或 坤造",
+    "birthInfo": "西曆年月日時（例：2000年1月1日0時）",
+    "dayMaster": "日主天干單字",
+    "dayElement": "金|木|水|火|土",
+    "pattern": "格局名稱（例：正印格、七殺格、食神格）",
+    "strength": "極強|偏強|中和|偏弱|極弱|從格",
+    "nativeType": "進攻底色|建設底色|創造底色|收藏底色",
+    "nativeTypeReason": "本命結構底色判定依據（一至兩句，說明為什麼是這個底色——主導十神、格局、結構）",
+    "currentState": "駭客模式|被動模式|蓄力模式|警戒模式",
+    "currentStateReason": "當前運勢狀態判定依據（一至兩句，說明當前大運/流年如何引動喜忌、為什麼是這個狀態）",
+    "typeCombination": "本命底色 × 當前狀態 的綜合判讀（一句話，說明這個組合在當下意味著什麼，例：『收藏底色 + 駭客模式 = 把過去十年囤積的研究與資源終於要落地變現的窗口』）",
+    "currentLuck": "當前大運簡述（例：31 癸未食神）",
+    "currentAge": 當前虛歲數字
+  },
+  "lifeMotto": "人生命題一句話（15-30 字，直指核心命題，禁空泛勵志）",
+  "dayObject": "日主物象（具體意象，例：辛金如埋玉於土，需水洗淨方顯光華）",
+  "pillars": [
+    {
+      "pos": "年柱",
+      "star": "主星十神",
+      "stem": "天干字",
+      "stemElement": "金|木|水|火|土",
+      "branch": "地支字",
+      "branchElement": "金|木|水|火|土",
+      "hidden": ["（藏幹字）十神名", "..."]
+    },
+    { "pos": "月柱", ... },
+    { "pos": "日柱", star 寫「日主」, ... },
+    { "pos": "時柱", ... }
+  ],
+  "wuxing": {
+    "metal": 0-100 數字（綜合評估該五行在命局中的旺度）,
+    "water": 0-100,
+    "wood": 0-100,
+    "fire": 0-100,
+    "earth": 0-100
+  },
+  "prescription": {
+    "main": "主藥（例：水（食神洩秀））",
+    "sub": "輔藥（例：木（財星接現實））",
+    "avoid": "忌神（例：土、金）"
+  },
+  "blockages": [
+    {
+      "title": "堵塞名稱（6-12 字，要像 bug 報告，例：『資訊囤積症』『沒人推就不會動』）",
+      "symptom": "現實表徵（30-60 字，具體可驗證的行為證據，禁泛敘事）",
+      "breakthrough": "突破指令（60-100 字，精練、具體、今天就能做的動作。禁『多反思、多覺察』這種空話）"
+    }
+  ],
+  "physicalRemedy": [
+    "物理補償行為（具體可執行，如：每週 3 次游泳洩旺金）"
+  ],
+  "socialFilter": {
+    "avoid": "遠離哪類社交（一句話）",
+    "approach": "靠近哪類社交（一句話）"
+  },
+  "pastWindows": [
+    {
+      "year": "過去年份 天干地支｜主題標籤（例：2023 癸卯｜試水變現年）",
+      "confidence": "強斷|傾向|存疑",
+      "hypothesis": "推論：這年對方『很可能』發生的具體事件模式（2-3 句，用生活語言，不是泛泛說法。例：『這年你可能第一次嘗試把副業或創作拿出來曝光，但還在試水階段；年中前後有一次被朋友或同事拉去共同做案的機會，你八成接了。』）",
+      "reasoning": {
+        "vernacular": "用生活語言解釋『為什麼回推會這樣猜』（60-120 字）：這年宇宙能量打開了你命盤裡哪個閘門、補了哪個缺、或和哪個部件共振。禁命理術語",
+        "classical": "命理依據（30-60 字）：年柱干支、透干當令、引動的十神用神"
+      },
+      "verify": "請對方自我對照的 3 個具體觀測點（例：『① 這年是否第一次發布作品／接受採訪／做公開分享？② 是否有朋友邀你合作或投資？③ 身體是否在年中前後進入一段明顯疲憊期？』）"
+    }
+  ],
+  "windows": [
+    {
+      "year": "年份 天干地支｜主星特徵（例：2026 丙午｜正官年）",
+      "rating": 1-5 整數,
+      "confidence": "強斷|傾向|存疑",
+      "summary": "結構解析（2-3 句，生活化比喻定調）",
+      "reasoning": {
+        "vernacular": "用生活語言解釋『為什麼偏偏是這年』（80-150 字）：這年的宇宙能量正好放大了你命盤裡哪個部件／補了哪個缺、或怎麼和你本人『鎖定』、為什麼不會擦邊而過。禁止使用任何命理術語（禁：天干、地支、十神、正官七殺、合沖、得令等）",
+        "classical": "命理依據（40-80 字，純技術層面）：年柱干支、對日主的作用（透干、當令、合沖）、引動哪個十神／用神，為什麼判為關鍵。本欄位可使用完整命理術語"
+      },
+      "lowMode": "低階被動模式（具體情境／自毀路徑，30-80 字）",
+      "highMode": "高階駕馭模式（具體駕馭動作，30-80 字）",
+      "falsify": "可證偽條件（具體可驗證的客觀事件，例：若 2026 年底前未發生職銜變動／重大責任增加／對外公開曝光之一，此判作廢）"
+    }
+  ],
+  "outfit": {
+    "mainColors": [
+      { "name": "色名（例：深藍）", "hex": "#1e3a5f" }
+    ],
+    "materials": "推薦材質一句（例：絲質、薄羊毛、棉麻）",
+    "taboo": "禁忌色與材質一句",
+    "directions": "工作桌朝向建議（例：北（水）或東（木））",
+    "environment": "空間操作（例：動水焦點 > 流水裝置 > 藍色畫作）",
+    "schedule": "作息節奏（例：23:30 前入睡，6:00 前起，卯時接木）"
+  },
+  "actions": [
+    "行為指令，用 <strong>短標題</strong>：細節 格式，每條具體可執行"
+  ]
+}
+
+## 嚴格數量要求
+- pillars：正好 4 個（年月日時）
+- wuxing：五行皆需有分數
+- blockages：**正好 3 個**（不多不少——三才能讓人記得住、不稀釋）
+- physicalRemedy：4-6 個
+- pastWindows：**3 個**過去五年（2021-2025 範圍）的高槓桿年份。這是信任建立機制——讓對方看你能不能把他已經發生過的事說中，不是占卜。hypothesis 要夠具體到能被驗證「中了幾成」，但也不能過度斷言（用『很可能／八成會／應該經歷過』這類語氣）
+- windows：**只給 2-3 個**未來高槓桿窗口，禁年年預測。窗口觸發條件：大運交接 / 天剋地沖 / 三合會局 / 關鍵用神引動
+- outfit.mainColors：4-6 色
+- actions：5-8 個
+
+## 輸出前自檢（通過才輸出）
+1. 全程威銘大師角色，無「作為 AI」破口
+2. 雙軌為低階/高階非平衡敘事
+3. 物理詞彙已標註（隱喻）
+4. 每個 window 附 confidence + falsify
+5. 本命底色（nativeType）+ 當前狀態（currentState）兩軸都明確判定，且當前狀態的語言調性已覆寫本命缺陷的負面預測（流年覆寫原則）
+6. 繁體中文（台灣用語）
+7. **只輸出 JSON 物件**，不要任何前後說明、不要 markdown 標題、不要三個反引號包裹
+
+現在請檢視附上的兩張圖，開始分析並只輸出 JSON。`;
+
+  const STAGE4_PROMPT_TEMPLATE = `# 威銘大師 2.1.3｜深潛主題
+
+## ⊙ 時間錨點
+**今天的日期是 __TODAY__（西曆）。所有「現在」「當前」「目前」都以此日期為準。**
+⚠️ 如果上面看到的是字面 \`__TODAY__\`（未被替換），先停止分析，請使用者提供今天的日期再繼續。
+
+先前已完成命盤底層代碼分析，JSON 如下：
+
+\`\`\`json
+__RESULT_JSON__
+\`\`\`
+
+使用者想深入談的方向：
+__TOPIC__
+
+## 任務
+圍繞上述主題，結合命盤結構（nativeType 本命底色）與當前大運流年（currentState 當前狀態），寫一段專屬的深潛分析。
+
+## 大運流年分析要求（核心，不可省略）
+
+在進入雙軌劇本之前，必須先完成以下四步大運解碼，並把結論**貫穿整個 bottleneck、scenarioA、scenarioB**，不得只在 bottleneck 裡一筆帶過：
+
+1. **識別當前大運與流年**：從 JSON 的 currentLuck 與 meta 欄位提取大運名稱（例：癸未食神大運）與今年流年（從 todayDate 推算）。大運天干、地支各代表什麼十神？在本主題（如：職涯）上的白話意義是什麼？
+
+2. **大運 × 本主題的具體作用**：不要泛說「食神大運有利輸出」。要說：「食神（白話：把腦袋裡的東西拿出去讓人用、換成錢的能力）大運，意思是在『職涯』這個主題上，外部環境正在強迫這個命盤的輸出通道從地下室搬到一樓——具體表現是什麼？」
+
+3. **流年疊加效果**：今年流年的十神 × 大運十神，在本主題上形成什麼複合作用？是同向加速（例：食神大運 + 財星流年 = 輸出直接換錢）還是對沖張力（例：食神大運 + 官星流年 = 輸出能力遇到外部責任壓力，要接住還是被壓扁是關鍵）？
+
+4. **大運在雙軌中的差異**：劇本 A 的人，是怎麼「順用」了大運帶來的特定機會？劇本 B 的人，是怎麼「浪費」或「誤讀」了同一個大運？**scenarioA.narrative 和 scenarioB.narrative 都必須具體說明大運如何在那個劇本裡體現**，不能兩個 narrative 都不提大運。
+
+## 重要：禁單一斷言，必須雙軌推演
+威銘大師在缺乏使用者當前現實反饋時，**禁絕單一斷言式 diagnosis**。同樣的命局組合可能正走在「成功劇本」（順勢突破者），也可能正走在「失敗劇本」（逆勢套牢者）——AI 沒有水晶球判斷對方在哪條軌道上，必須**同時寫出兩個對立劇本**，然後用一個校準提問把選擇權交回給命主。
+
+這不是雙模式（低階/高階）的重複——雙模式是「面對同一個現實，被動應對 vs 主動駕馭」；雙軌劇本是「過去這幾年命主可能已經走入了 A 或 B 兩種完全不同的人生分支，AI 不知道是哪一條」。
+
+## 語言風格（最重要）
+像朋友在咖啡廳聊天，不是師傅講經：
+- 用具體場景、具體對話、具體動作
+- 禁「能量、氣場、磁場、頻率」飄浮詞
+- 命理術語（如七殺、正印）首次出現要立刻白話翻譯
+- 兩個 scenario 要有畫面（例：「scenarioA：你現在很可能已經是那種公司裡『沒你不行』的關鍵角色，年薪過某個門檻、底下帶 3-5 人小團隊、開始有獵頭來敲；scenarioB：相反，你還在那個『年資夠了但卡在中間層』的位置，每天看著比你晚進來的人升遷，覺得自己只是運氣差」）
+- calibrationQuestion 要具體到一個「是/否」「A/B」「高於/低於」就能回答的二元問題
+- ifA / ifB 必須是各自情境下今天／這週就能做的具體動作
+
+## 輸出格式（嚴格 JSON，禁 markdown、禁三個反引號包裹）
+
+{
+  "topic": "你要深潛的主題（一句話複述確認）",
+  "nativeType": "從命盤 JSON 帶入的本命底色",
+  "currentState": "從命盤 JSON 帶入的當前狀態",
+  "bottleneck": "結構性根源——這個主題在你命盤裡卡住的真正槓桿點（3-4 句，不是表象問題，要直指本命底色 × 當前狀態 的特定組合產生的盲點）",
+  "scenarioA": {
+    "label": "順勢突破劇本｜短標題（例：『你已經在曲線上方』）",
+    "narrative": "成功劇本（5-7 句）：如果命主已成功駕馭當前狀態，他現在的人生樣貌會長怎樣？要寫出可被驗證的具體外部指標——職位、收入區間、人際結構、健康狀態、心境特徵。避免泛泛『成功』『順遂』，要像在描述一個你認識的具體朋友",
+    "risk": "成功劇本下的隱藏風險（2-3 句）：如果在 A 軌道上，下一個會被自己反噬的點是什麼？通常是『過度某某』或『盲區某某』"
+  },
+  "scenarioB": {
+    "label": "逆勢套牢劇本｜短標題（例：『你還在曲線下方』）",
+    "narrative": "失敗劇本（5-7 句）：如果命主錯過或誤用了當前狀態，他現在的人生樣貌會長怎樣？同樣要寫具體外部指標——可能是被某個位置卡住、某個關係糾纏、某種重複性挫敗。要寫得讓對方一看就知道『中沒中』",
+    "trap": "失敗劇本下的最深陷阱（2-3 句）：如果在 B 軌道上，命主最容易自我安慰／合理化的那個藉口是什麼"
+  },
+  "calibrationQuestion": "校準提問（一句話）：問一個極具體的二元問題，命主只要在心裡回答 A 或 B、是或否、有或沒有，就能立刻知道自己在哪條軌道。例：『過去 12 個月內，是否有人主動找你談合作／挖角／投資（不是你主動寄履歷出去的）？』",
+  "ifA": "若你在順勢突破劇本上的下一步（今天/這週可執行，2-3 句）：通常是『止盈、布局、識別下一個拐點』類動作",
+  "ifB": "若你在逆勢套牢劇本上的下一步（今天/這週可執行，2-3 句）：通常是『停損、打破慣性、強迫一個小型公開動作』類動作",
+  "questions": ["回答完校準提問後，建議深入追問的三個方向，每個都具體到『今天可以去問誰／去試什麼／去觀察什麼』"]
+}`;
+
+  // ===== 日期注入 =====
+  // 不再用「複製當下系統時間」寫死——使用者可以調整輸入框的日期，
+  // 因為他可能今天複製、明天才用，或想分析昨天/明天的時點。
+  function formatDateForPrompt(yyyymmdd) {
+    // 接受 'YYYY-MM-DD'（type=date 的回傳格式）
+    if (!yyyymmdd || !/^\d{4}-\d{2}-\d{2}$/.test(yyyymmdd)) return null;
+    const [y, m, d] = yyyymmdd.split('-');
+    const dt = new Date(y + '-' + m + '-' + d + 'T00:00:00');
+    if (isNaN(dt.getTime())) return null;
+    const weekdayMap = ['日','一','二','三','四','五','六'];
+    return y + ' 年 ' + m + ' 月 ' + d + ' 日（星期' + weekdayMap[dt.getDay()] + '）';
+  }
+  function getTodayInputValue() {
+    const el = document.getElementById('todayDateInput');
+    return el ? el.value : '';
+  }
+  function getResolvedPrompt() {
+    const formatted = formatDateForPrompt(getTodayInputValue());
+    // 如果日期沒填或格式怪，保留 __TODAY__ 字面——咒語第二段防呆會讓 Claude 主動跟使用者要日期
+    return WEIMING_PROMPT.replace(/__TODAY__/g, formatted || '__TODAY__');
+  }
+  // 取現在系統時間的字串——僅用於下載圖檔的時間戳（不可被使用者覆蓋）
+  function getSystemDateStamp() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const weekdayMap = ['日','一','二','三','四','五','六'];
+    return y + ' 年 ' + m + ' 月 ' + day + ' 日（星期' + weekdayMap[d.getDay()] + '）';
+  }
+  function onTodayDateChange() {
+    const box = document.getElementById('promptBox');
+    if (box) box.textContent = getResolvedPrompt();
+  }
+
+  // ===== LINE WebView 偵測 =====
+  function isLineWebView() {
+    const ua = navigator.userAgent || '';
+    return /\bLine\//i.test(ua) || /Line\/[\d.]+/i.test(ua);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // 預設今天
+    const todayInput = document.getElementById('todayDateInput');
+    if (todayInput) {
+      const d = new Date();
+      const isoToday = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+      todayInput.value = isoToday;
+    }
+    document.getElementById('promptBox').textContent = getResolvedPrompt();
+
+    // LINE WebView 警告
+    if (isLineWebView()) {
+      const warn = document.getElementById('lineWarning');
+      if (warn) warn.classList.add('active');
+    }
+  });
+
+  // ===== Step Navigation =====
+  function goStep(n) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.getElementById(`step${n}`).classList.add('active');
+    document.querySelectorAll('.step-item').forEach((el, i) => {
+      el.classList.remove('active', 'done');
+      if (i + 1 === n) el.classList.add('active');
+      else if (i + 1 < n) el.classList.add('done');
+    });
+    state.currentStep = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ===== Error =====
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.classList.add('active');
+    document.getElementById('loadingBox').classList.remove('active');
+  }
+  function hideError() {
+    document.getElementById('errorBox').classList.remove('active');
+  }
+
+  // ===== Copy & Paste flow =====
+  function flashCopied(btn) {
+    const orig = btn.dataset.origText || btn.textContent;
+    btn.dataset.origText = orig;
+    btn.textContent = '已複製 ✓';
+    btn.style.color = 'var(--wood)';
+    btn.style.borderColor = 'var(--wood)';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 1800);
+  }
+
+  // 偵測 iOS / 觸控裝置
+  function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  // 開啟手動複製 modal（v2.1.3 手動友善版）
+  // 設計原則：不再幻想 JS 自動拷貝會在 LINE/file:// 動作。
+  // 改用四條繞道路徑，使用者選最方便的：
+  //   1) 大文字框 + -webkit-user-select:all：點一下就全選（不靠 JS API）
+  //   2) 📥 下載 .txt：用 <a download>，OS 級操作不受剪貼簿沙盒限制
+  //   3) ✉ 寄到自己信箱：mailto: 開信箱 App，從信件內容拷貝
+  //   4) 🤝 試試自動拷貝：clipboard / execCommand / share——能成是 bonus，不能成不阻塞
+  function openCopyModal(text) {
+    const old = document.getElementById('copyModal');
+    if (old) old.parentNode.removeChild(old);
+
+    const inLine = isLineWebView();
+
+    const modal = document.createElement('div');
+    modal.id = 'copyModal';
+    modal.setAttribute('style',
+      'position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;' +
+      'background:#0a0e1a;z-index:99999;padding:16px;box-sizing:border-box;' +
+      'display:flex;flex-direction:column;overflow-y:auto;' +
+      '-webkit-overflow-scrolling:touch;'
+    );
+
+    // ===== 標題 =====
+    const titleEl = document.createElement('div');
+    titleEl.setAttribute('style', 'color:#d4af37;font-size:17px;letter-spacing:3px;margin-bottom:4px;font-weight:700;flex-shrink:0;');
+    titleEl.textContent = '取得咒語（四種方式擇一）';
+
+    // ===== 提示（依環境分流）=====
+    const hintEl = document.createElement('div');
+    hintEl.setAttribute('style', 'font-size:13px;line-height:1.7;margin-bottom:12px;flex-shrink:0;padding:10px 12px;border-left:3px solid #d4af37;background:rgba(212,175,55,0.06);');
+    if (inLine) {
+      hintEl.innerHTML =
+        '<strong style="color:#ffb86c;">⚠ LINE 內建瀏覽器擋 JS 自動複製</strong>' +
+        '<span style="color:#c8c4b8;">（這是瀏覽器沙盒，非 bug）。請用以下任一手動路徑：</span>';
+    } else {
+      hintEl.innerHTML =
+        '<strong style="color:#8fdba8;">手動拷貝最穩</strong>' +
+        '<span style="color:#c8c4b8;">：點文字框會自動全選，再長按「拷貝」即可。下載 .txt 或寄信也是常見繞道。</span>';
+    }
+
+    // ===== 方式 1：大文字框（一觸全選，不靠 JS API）=====
+    const tipA = document.createElement('div');
+    tipA.setAttribute('style', 'color:#d4af37;font-size:14px;font-weight:700;margin:6px 0 6px;letter-spacing:1px;flex-shrink:0;');
+    tipA.innerHTML = '① 點下方文字框 → 長按 → 全選 → 拷貝';
+
+    const ta = document.createElement('textarea');
+    ta.id = 'copyModalTA';
+    ta.value = text;
+    ta.readOnly = true;
+    ta.setAttribute('autocomplete', 'off');
+    ta.setAttribute('autocorrect', 'off');
+    ta.setAttribute('autocapitalize', 'off');
+    ta.setAttribute('spellcheck', 'false');
+    // 關鍵：-webkit-user-select:all 讓 iOS/Android 點一下就全選整段
+    ta.setAttribute('style',
+      'flex:1 1 auto;width:100%;min-height:180px;max-height:50vh;background:#000;color:#f5f2e8;' +
+      'border:2px solid #d4af37;padding:14px;font-size:14px;line-height:1.6;' +
+      'font-family:Menlo,Consolas,Courier New,monospace;box-sizing:border-box;outline:none;resize:none;' +
+      '-webkit-user-select:all;user-select:all;-webkit-touch-callout:default;cursor:text;'
+    );
+    // 點一下時主動全選（雙保險）
+    ta.addEventListener('focus', function() {
+      try { ta.setSelectionRange(0, ta.value.length); } catch (_) {}
+    });
+    ta.addEventListener('click', function() {
+      try { ta.setSelectionRange(0, ta.value.length); } catch (_) {}
+    });
+
+    // ===== 方式 2/3/4 按鈕區 =====
+    const tipBtns = document.createElement('div');
+    tipBtns.setAttribute('style', 'color:#9ba0ab;font-size:12px;margin:14px 0 6px;letter-spacing:1px;flex-shrink:0;');
+    tipBtns.textContent = '──── 或用以下繞道（不靠剪貼簿）────';
+
+    const btnGrid = document.createElement('div');
+    btnGrid.setAttribute('style', 'display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0;margin-bottom:8px;');
+
+    // 方式 2：下載 .txt（OS 級，最穩）
+    const dlBtn = document.createElement('a');
+    dlBtn.setAttribute('href', '#');
+    dlBtn.setAttribute('style',
+      'display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;' +
+      'padding:14px 8px;background:#6b9e7e;color:#0a0e1a;border:0;font-size:13px;letter-spacing:1px;' +
+      'font-weight:700;cursor:pointer;border-radius:0;line-height:1.4;'
+    );
+    dlBtn.innerHTML = '② 📥 下載為 .txt<br><span style="font-size:10px;opacity:0.85;font-weight:400;">最穩｜下載後從檔案拷貝</span>';
+    dlBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      try {
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '威銘大師咒語.txt';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+          try { document.body.removeChild(a); } catch (_) {}
+          try { URL.revokeObjectURL(url); } catch (_) {}
+        }, 1000);
+      } catch (err) {
+        alert('下載失敗：' + (err && err.message ? err.message : err) + '\n請改用上方文字框長按複製。');
+      }
+    });
+
+    // 方式 3：寄到自己信箱（mailto:）
+    const mailBtn = document.createElement('a');
+    mailBtn.setAttribute('style',
+      'display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;' +
+      'padding:14px 8px;background:#4a7fa5;color:#0a0e1a;border:0;font-size:13px;letter-spacing:1px;' +
+      'font-weight:700;cursor:pointer;border-radius:0;line-height:1.4;'
+    );
+    mailBtn.innerHTML = '③ ✉ 寄到自己信箱<br><span style="font-size:10px;opacity:0.85;font-weight:400;">開信箱 App｜從信件拷貝</span>';
+    // mailto 有長度限制，動態組
+    mailBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      // mailto: URL 大多瀏覽器上限約 2000 字元，咒語會超過——先試 share，再試短版本
+      const subject = encodeURIComponent('威銘大師咒語');
+      // 提示使用者：mailto 不一定承載得了完整咒語，回退時讓他自己貼
+      const head = '【咒語太長 mailto 可能截斷，建議改用「下載 .txt」】\n\n';
+      const body = encodeURIComponent(head + text);
+      const href = 'mailto:?subject=' + subject + '&body=' + body;
+      // 嘗試開啟——失敗就 fallback 提醒
+      try {
+        const w = window.open(href, '_self');
+        // iOS LINE 可能無法開 mailto；給使用者退路
+        setTimeout(function() {
+          if (!document.hidden) {
+            // 沒有跳出去——可能被擋，改提示用下載
+            // 不主動 alert（會干擾），交由使用者觀察
+          }
+        }, 800);
+      } catch (err) {
+        alert('無法開啟信箱 App。請改用「下載 .txt」或長按文字拷貝。');
+      }
+    });
+
+    btnGrid.appendChild(dlBtn);
+    btnGrid.appendChild(mailBtn);
+
+    // 方式 4：自動拷貝（能成是 bonus）
+    const autoRow = document.createElement('div');
+    autoRow.setAttribute('style', 'display:flex;gap:8px;flex-shrink:0;margin-bottom:8px;');
+
+    const autoBtn = document.createElement('button');
+    autoBtn.type = 'button';
+    autoBtn.setAttribute('style',
+      'flex:1;padding:12px 8px;background:transparent;color:#d4af37;border:1px solid #d4af37;' +
+      'font-size:13px;letter-spacing:1px;font-weight:700;cursor:pointer;border-radius:0;line-height:1.3;'
+    );
+    autoBtn.innerHTML = '④ 🤝 試試自動拷貝';
+    autoBtn.addEventListener('click', function() {
+      let ok = false;
+      // 試 1：execCommand
+      try {
+        ta.focus();
+        ta.setSelectionRange(0, ta.value.length);
+        ok = document.execCommand('copy');
+      } catch (_) {}
+      if (ok) {
+        autoBtn.textContent = '已複製 ✓';
+        autoBtn.style.background = '#6b9e7e';
+        autoBtn.style.color = '#0a0e1a';
+        return;
+      }
+      // 試 2：navigator.clipboard
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          autoBtn.textContent = '已複製 ✓';
+          autoBtn.style.background = '#6b9e7e';
+          autoBtn.style.color = '#0a0e1a';
+        }).catch(function() {
+          // 試 3：navigator.share
+          tryShare();
+        });
+        return;
+      }
+      tryShare();
+    });
+
+    function tryShare() {
+      if (navigator.share) {
+        navigator.share({ title: '威銘大師咒語', text: text }).catch(function(err) {
+          if (err && err.name !== 'AbortError') {
+            autoBtn.textContent = '✗ 都被擋｜請用上方手動';
+            autoBtn.style.color = '#ff8c8c';
+            autoBtn.style.borderColor = '#ff8c8c';
+          }
+        });
+      } else {
+        autoBtn.textContent = '✗ 都被擋｜請用上方手動';
+        autoBtn.style.color = '#ff8c8c';
+        autoBtn.style.borderColor = '#ff8c8c';
+      }
+    }
+
+    autoRow.appendChild(autoBtn);
+
+    // 系統分享（如果支援）—— 獨立按鈕，因為 share 行為跟 copy 不同
+    if (navigator.share) {
+      const shareBtn = document.createElement('button');
+      shareBtn.type = 'button';
+      shareBtn.setAttribute('style',
+        'flex:1;padding:12px 8px;background:transparent;color:#9ba0ab;border:1px solid #9ba0ab;' +
+        'font-size:13px;letter-spacing:1px;font-weight:700;cursor:pointer;border-radius:0;line-height:1.3;'
+      );
+      shareBtn.innerHTML = '📤 系統分享選單';
+      shareBtn.addEventListener('click', function() {
+        navigator.share({ title: '威銘大師咒語', text: text }).catch(function(err) {
+          if (err && err.name !== 'AbortError') {
+            shareBtn.textContent = '分享失敗';
+          }
+        });
+      });
+      autoRow.appendChild(shareBtn);
+    }
+
+    // ===== 關閉按鈕 =====
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('style',
+      'width:100%;padding:14px;background:#1a1f2e;color:#9ba0ab;border:1px solid #3a3f4e;' +
+      'font-size:14px;letter-spacing:3px;cursor:pointer;border-radius:0;flex-shrink:0;margin-top:4px;'
+    );
+    closeBtn.textContent = '關閉';
+    closeBtn.addEventListener('click', function() {
+      try { modal.parentNode.removeChild(modal); } catch (_) {}
+    });
+
+    // ===== 組裝 =====
+    modal.appendChild(titleEl);
+    modal.appendChild(hintEl);
+    modal.appendChild(tipA);
+    modal.appendChild(ta);
+    modal.appendChild(tipBtns);
+    modal.appendChild(btnGrid);
+    modal.appendChild(autoRow);
+    modal.appendChild(closeBtn);
+    document.body.appendChild(modal);
+
+    // 自動 focus + 全選（桌面瀏覽器一觸即發）
+    setTimeout(function() {
+      try {
+        ta.focus();
+        ta.setSelectionRange(0, ta.value.length);
+      } catch (_) {}
+    }, 120);
+  }
+
+  async function copyPrompt(btn) {
+    const text = getResolvedPrompt();
+    // 防呆：日期沒填的話直接提醒
+    if (text.indexOf('__TODAY__') !== -1) {
+      const ok = confirm('「今天日期」尚未填寫，咒語裡會留下占位符 __TODAY__。\nClaude 會看到並主動跟你要日期，但建議你直接在頁面上填好再複製。\n\n要繼續複製嗎？');
+      if (!ok) return;
+    }
+
+    const ua = navigator.userAgent || '';
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    // === v2.1.3 策略 ===
+    // 手機 / LINE / file:// 一律直接開 modal——modal 內含四種繞道（手動全選、下載 .txt、寄信、自動拷貝）
+    // 不再先嘗試自動拷貝再失敗，因為這在 LINE 內會給人「按了沒反應」的錯覺
+    const isFileProtocol = location.protocol === 'file:';
+    if (isMobile || isLineWebView() || isFileProtocol) {
+      openCopyModal(text);
+      return;
+    }
+
+    // === 桌面 + HTTPS：才嘗試自動拷貝（這裡是真的會成功的場景）===
+    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        flashCopied(btn);
+        return;
+      } catch (e) { /* fall through */ }
+    }
+
+    // 桌面 fallback：execCommand
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      ta.style.top = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (ok) { flashCopied(btn); return; }
+    } catch (_) {}
+
+    // 全部都失敗 → 開 modal
+    openCopyModal(text);
+  }
+
+  // ===== 下載命盤分析圖（PNG）=====
+  async function downloadResultImage(btn) {
+    if (typeof html2canvas !== 'function') {
+      alert('截圖元件尚未載入完成（需網路連線載入 html2canvas）。請等幾秒再試。');
+      return;
+    }
+    const root = document.getElementById('resultExportRoot');
+    if (!root) {
+      alert('找不到結果區域');
+      return;
+    }
+
+    const origHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⌛ 渲染中…';
+
+    // 暫時把 .stage4-prompt 與 .result-actions 等不該出現在圖中的元素隱藏
+    // （我們已經把 export root 切出來了，但保險起見再過濾一次 inside the root）
+    const hideList = root.querySelectorAll('[data-no-export="true"]');
+    const prevDisplay = [];
+    hideList.forEach((el, i) => {
+      prevDisplay[i] = el.style.display;
+      el.style.display = 'none';
+    });
+
+    try {
+      // 給命盤圖一個明確的背景色（深色），並在頂部、底部加 padding，留出標題與浮印的空間
+      const today = getSystemDateStamp();
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'background:#0a0e1a;padding:36px 32px 36px;width:' + Math.max(root.offsetWidth, 720) + 'px;box-sizing:border-box;position:fixed;top:-100000px;left:0;';
+
+      // 標題列（圖檔頂部）
+      const header = document.createElement('div');
+      header.style.cssText = 'border-bottom:1px solid rgba(212,175,55,0.3);padding-bottom:16px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;';
+      header.innerHTML =
+        '<div style="font-family:\'Noto Serif TC\',serif;color:#d4af37;font-size:20px;letter-spacing:6px;">威 銘 大 師　2.1.3</div>' +
+        '<div style="font-size:11px;color:#9ba0ab;letter-spacing:2px;">分析時間 · ' + today + '</div>';
+      wrapper.appendChild(header);
+
+      // 把結果 root 的 clone 放進 wrapper（避免影響原 DOM 互動）
+      const clone = root.cloneNode(true);
+      // clone 內部展開所有的 hidden / collapsed 區段
+      clone.querySelectorAll('[data-no-export="true"]').forEach(el => el.remove());
+      wrapper.appendChild(clone);
+
+      // 浮印
+      const watermark = document.createElement('div');
+      watermark.style.cssText = 'border-top:1px solid rgba(212,175,55,0.2);padding-top:14px;margin-top:24px;text-align:center;font-size:10px;color:#9ba0ab;letter-spacing:3px;';
+      watermark.textContent = 'WEI MING MASTER 2.1.3  ·  人 生 底 層 代 碼  ·  本 圖 僅 供 個 人 參 考';
+      wrapper.appendChild(watermark);
+
+      document.body.appendChild(wrapper);
+
+      // 等一個 paint 週期讓 layout 穩定
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+      const canvas = await html2canvas(wrapper, {
+        backgroundColor: '#0a0e1a',
+        scale: window.devicePixelRatio >= 2 ? 2 : 1.5,
+        useCORS: true,
+        logging: false,
+        windowWidth: wrapper.offsetWidth,
+        windowHeight: wrapper.offsetHeight
+      });
+
+      document.body.removeChild(wrapper);
+
+      // 觸發下載
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+      a.href = url;
+      a.download = '威銘大師命盤分析_' + stamp + '.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+
+      btn.innerHTML = '✓ 已下載';
+      setTimeout(() => { btn.innerHTML = origHTML; btn.disabled = false; }, 1800);
+    } catch (e) {
+      console.error('下載失敗', e);
+      alert('下載失敗：' + (e && e.message ? e.message : e));
+      btn.innerHTML = origHTML;
+      btn.disabled = false;
+    } finally {
+      // 還原被隱藏的元素
+      hideList.forEach((el, i) => { el.style.display = prevDisplay[i] || ''; });
+    }
+  }
+
+  // ===== 下載深潛分析圖（PNG）=====
+  async function downloadStage4Image(btn) {
+    if (typeof html2canvas !== 'function') {
+      alert('截圖元件尚未載入完成（需網路連線載入 html2canvas）。請等幾秒再試。');
+      return;
+    }
+    const root = document.getElementById('stage4ExportRoot');
+    if (!root) {
+      alert('找不到深潛結果區域，請先渲染深潛分析');
+      return;
+    }
+
+    const origHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⌛ 渲染中…';
+
+    try {
+      const today = getSystemDateStamp();
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'background:#0a0e1a;padding:36px 32px 36px;width:' + Math.max(root.offsetWidth, 720) + 'px;box-sizing:border-box;position:fixed;top:-100000px;left:0;';
+
+      // 標題列
+      const header = document.createElement('div');
+      header.style.cssText = 'border-bottom:1px solid rgba(212,175,55,0.3);padding-bottom:16px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;';
+      header.innerHTML =
+        '<div style="font-family:\'Noto Serif TC\',serif;color:#d4af37;font-size:20px;letter-spacing:6px;">威 銘 大 師　2.1.3　深潛分析</div>' +
+        '<div style="font-size:11px;color:#9ba0ab;letter-spacing:2px;">分析時間 · ' + today + '</div>';
+      wrapper.appendChild(header);
+
+      const clone = root.cloneNode(true);
+      clone.querySelectorAll('[data-no-export="true"]').forEach(el => el.remove());
+      wrapper.appendChild(clone);
+
+      // 浮印
+      const watermark = document.createElement('div');
+      watermark.style.cssText = 'border-top:1px solid rgba(212,175,55,0.2);padding-top:14px;margin-top:24px;text-align:center;font-size:10px;color:#9ba0ab;letter-spacing:3px;';
+      watermark.textContent = 'WEI MING MASTER 2.1.3  ·  深 潛 主 題 分 析  ·  本 圖 僅 供 個 人 參 考';
+      wrapper.appendChild(watermark);
+
+      document.body.appendChild(wrapper);
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+      const canvas = await html2canvas(wrapper, {
+        backgroundColor: '#0a0e1a',
+        scale: window.devicePixelRatio >= 2 ? 2 : 1.5,
+        useCORS: true,
+        logging: false,
+        windowWidth: wrapper.offsetWidth,
+        windowHeight: wrapper.offsetHeight
+      });
+
+      document.body.removeChild(wrapper);
+
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.95));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+      a.href = url;
+      a.download = '威銘大師深潛分析_' + stamp + '.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+
+      btn.innerHTML = '✓ 已下載';
+      setTimeout(() => { btn.innerHTML = origHTML; btn.disabled = false; }, 1800);
+    } catch (e) {
+      console.error('深潛下載失敗', e);
+      alert('下載失敗：' + (e && e.message ? e.message : e));
+      btn.innerHTML = origHTML;
+      btn.disabled = false;
+    }
+  }
+
+  function extractJSON(raw) {
+    if (!raw) return null;
+    let cleaned = raw.trim();
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1) return null;
+    return cleaned.slice(firstBrace, lastBrace + 1);
+  }
+
+  function renderFromPaste() {
+    hideError();
+    const raw = document.getElementById('jsonInput').value.trim();
+    if (!raw) return showError('請先把 Claude 回傳的 JSON 貼到框框裡');
+    const jsonStr = extractJSON(raw);
+    if (!jsonStr) return showError('找不到 JSON 內容（需包含 { ... }）');
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch (e) {
+      return showError('JSON 格式錯誤：' + e.message + '\n\n可能 Claude 多加了說明文字。請再向 Claude 要求：「只輸出 JSON 物件，不要任何前後說明、不要 markdown 包裹」');
+    }
+    if (!parsed.meta || !parsed.pillars || !parsed.wuxing || !parsed.windows) {
+      return showError('JSON 缺少必要欄位（meta / pillars / wuxing / windows）。請確認 Claude 已完整遵照 schema。');
+    }
+    state.result = parsed;
+    renderResult(parsed);
+    goStep(2);
+  }
+
+  // ===== Render =====
+  function renderResult(r) {
+    document.getElementById('lifeMotto').textContent = r.lifeMotto || '';
+    // 向後相容：舊版只有 type，新版有 nativeType + currentState
+    const metaTag = r.meta?.nativeType && r.meta?.currentState
+      ? r.meta.nativeType + ' × ' + r.meta.currentState
+      : (r.meta?.type || '');
+    document.getElementById('resultMeta').textContent = [
+      r.meta?.gender, r.meta?.dayMaster + '日主', r.meta?.pattern, metaTag
+    ].filter(Boolean).join(' · ');
+
+    // pillars
+    if (r.pillars && r.pillars.length === 4) {
+      const elMap = { '金': 'wuxing-metal', '木': 'wuxing-wood', '水': 'wuxing-water', '火': 'wuxing-fire', '土': 'wuxing-earth' };
+      const html = r.pillars.map((p, i) => {
+        const stemClass = elMap[p.stemElement] || '';
+        const branchClass = elMap[p.branchElement] || '';
+        const isDay = i === 2;
+        return `
+        <div class="pillar ${isDay ? 'day' : ''}">
+          <div class="pos">${p.pos}${isDay ? '（' + (r.meta?.gender === '坤造' ? '元女' : '元男') + '）' : ''}</div>
+          <div class="star">${isDay ? '本人' : (p.star || '')}</div>
+          <div class="char-row">
+            <span class="char ${stemClass}">${p.stem || ''}</span>
+            <span class="elem-tag ${stemClass}">${p.stemElement || ''}</span>
+          </div>
+          <div class="char-row branch-row">
+            <span class="branch ${branchClass}">${p.branch || ''}</span>
+            <span class="elem-tag ${branchClass}">${p.branchElement || ''}</span>
+          </div>
+          <div class="hidden">${(p.hidden || []).join('<br>')}</div>
+        </div>`;
+      }).join('');
+      document.querySelector('#pillarsBox .pillars').innerHTML = html;
+    }
+
+    // type — 雙軸 + 大運（三卡 + 組合判讀）
+    const m = r.meta || {};
+    // 卡 1：本命底色
+    const nativeTypeEl = document.getElementById('nativeTypeValue');
+    const nativeTypeReasonEl = document.getElementById('nativeTypeReason');
+    if (nativeTypeEl) nativeTypeEl.textContent = m.nativeType || m.type || '—';
+    if (nativeTypeReasonEl) nativeTypeReasonEl.textContent = m.nativeTypeReason || m.typeReason || r.dayObject || '';
+
+    // 卡 2：當前狀態
+    const currentStateEl = document.getElementById('currentStateValue');
+    const currentStateReasonEl = document.getElementById('currentStateReason');
+    if (currentStateEl) currentStateEl.textContent = m.currentState || '—';
+    if (currentStateReasonEl) currentStateReasonEl.textContent = m.currentStateReason || '';
+
+    // 卡 3：當前大運
+    const currentLuckEl = document.getElementById('currentLuckValue');
+    const currentLuckDescEl = document.getElementById('currentLuckDesc');
+    if (currentLuckEl) currentLuckEl.textContent = m.currentLuck || '—';
+    if (currentLuckDescEl) currentLuckDescEl.textContent = r.dayObject || '';
+
+    // 兩軸組合判讀
+    const combinationBox = document.getElementById('typeCombinationBox');
+    const combinationText = document.getElementById('typeCombinationText');
+    if (m.typeCombination && combinationText) {
+      combinationText.textContent = m.typeCombination;
+      if (combinationBox) combinationBox.style.display = '';
+    } else if (combinationBox) {
+      combinationBox.style.display = 'none';
+    }
+
+    // wuxing — 用 SVG 渲染，避開所有 CSS / DOM 樣式陷阱
+    if (r.wuxing) {
+      const w = r.wuxing;
+      const label = v => v >= 75 ? '極旺' : v >= 55 ? '有力' : v >= 35 ? '中和' : v >= 20 ? '虛弱' : '孤弱';
+      const COLORS = {
+        metal: { name: '金', tone: '#9ba0ab', solid: '#c8ccd4' },
+        water: { name: '水', tone: '#3f8ba8', solid: '#6bb8d8' },
+        wood:  { name: '木', tone: '#6b9e5e', solid: '#8fc285' },
+        fire:  { name: '火', tone: '#d66852', solid: '#f08a72' },
+        earth: { name: '土', tone: '#a88d5f', solid: '#c8a87a' }
+      };
+      const order = ['metal','water','wood','fire','earth'];
+      // 用 SVG 一次畫完——SVG 的 width/fill 屬性不可能被 CSS 蓋掉
+      const rowH = 36;
+      const totalH = rowH * order.length + 8;
+      const labelW = 48;
+      const valW = 90;
+      const gap = 14;
+      // viewBox 寬度用 1000 當基準，等比縮放
+      const vw = 1000;
+      const trackX = labelW + gap;
+      const trackW = vw - labelW - valW - gap * 2;
+      let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + vw + ' ' + totalH + '" width="100%" height="' + totalH + '" style="display:block;width:100%;height:auto;max-height:240px;">';
+      order.forEach((key, i) => {
+        const v = Math.max(0, Math.min(100, Number(w[key]) || 0));
+        const cfg = COLORS[key];
+        const y = i * rowH + 4;
+        const cy = y + rowH / 2;
+        const fillW = Math.max(8, (trackW * v) / 100);
+        // label
+        svg += '<text x="' + (labelW / 2) + '" y="' + (cy + 7) + '" fill="' + cfg.tone + '" font-size="20" font-weight="700" text-anchor="middle" font-family="Noto Serif TC, serif">' + cfg.name + '</text>';
+        // track
+        svg += '<rect x="' + trackX + '" y="' + (cy - 11) + '" width="' + trackW + '" height="22" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" stroke-width="1" rx="2"/>';
+        // fill bar
+        svg += '<rect x="' + trackX + '" y="' + (cy - 11) + '" width="' + fillW + '" height="22" fill="' + cfg.solid + '" rx="2"/>';
+        // val text
+        svg += '<text x="' + (vw - 4) + '" y="' + (cy + 5) + '" fill="#9ba0ab" font-size="14" text-anchor="end" font-family="Noto Serif TC, serif">' + label(v) + ' ' + v + '</text>';
+      });
+      svg += '</svg>';
+      const container = document.getElementById('wuxingBars');
+      container.innerHTML = svg;
+    }
+
+    // prescription
+    if (r.prescription) {
+      const pre = document.querySelector('.prescription');
+      pre.innerHTML = `
+        <span class="rx main">主藥 · ${r.prescription.main}</span>
+        <span class="rx sub">輔藥 · ${r.prescription.sub}</span>
+        <span class="rx avoid">忌 · ${r.prescription.avoid}</span>`;
+    }
+
+    // blockages
+    if (r.blockages) {
+      // 動態更新標題以符合實際數量（中文數字）
+      const cnNum = ['零','一','二','三','四','五','六','七','八','九','十'][r.blockages.length] || r.blockages.length;
+      const blockHeader = document.querySelector('#blockageList')?.previousElementSibling;
+      if (blockHeader && blockHeader.tagName === 'H3') {
+        blockHeader.textContent = `你的${cnNum}個「人生 bug」`;
+      }
+      document.getElementById('blockageList').innerHTML = r.blockages.map((b, i) => `
+        <div class="blockage-item">
+          <span class="idx">${String(i + 1).padStart(2, '0')}</span><span class="title">${b.title}</span>
+          <div class="symptom">${b.symptom}</div>
+          ${b.breakthrough ? `<div class="breakthrough">${b.breakthrough}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    const confMap = { '強斷': 'strong', '傾向': 'trend', '存疑': 'weak' };
+
+    // pastWindows（回推建立信任）
+    if (r.pastWindows && document.getElementById('pastTimeline')) {
+      document.getElementById('pastTimeline').innerHTML = r.pastWindows.map(p => `
+        <div class="timeline-item past">
+          <div class="timeline-head">
+            <span class="yr">${p.year}</span>
+            <span class="conf ${confMap[p.confidence] || 'trend'}">${p.confidence || '傾向'}</span>
+          </div>
+          <div class="hypothesis">
+            <span class="label">推論</span>
+            ${p.hypothesis || ''}
+          </div>
+          ${p.reasoning ? `
+          <div class="reasoning">
+            <span class="label">為什麼這樣回推</span>
+            ${p.reasoning.vernacular || ''}
+            ${p.reasoning.classical ? `<div class="classical">${p.reasoning.classical}</div>` : ''}
+          </div>` : ''}
+          <div class="verify"><strong>符合程度對照（是／否作答）</strong>${p.verify || ''}</div>
+        </div>
+      `).join('');
+    }
+
+    // windows
+    if (r.windows) {
+      document.getElementById('timeline').innerHTML = r.windows.map(w => `
+        <div class="timeline-item">
+          <div class="timeline-head">
+            <span class="yr">${w.year}</span>
+            <span class="rating">${'★'.repeat(w.rating || 3)}</span>
+            <span class="conf ${confMap[w.confidence] || 'trend'}">${w.confidence || '傾向'}</span>
+          </div>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">${w.summary || ''}</p>
+          ${w.reasoning ? `
+          <div class="reasoning">
+            <span class="label">為什麼偏偏是這一年</span>
+            ${w.reasoning.vernacular || ''}
+            ${w.reasoning.classical ? `<div class="classical">${w.reasoning.classical}</div>` : ''}
+          </div>` : ''}
+          <div class="dual-track">
+            <div class="track low"><span class="mode">低階被動</span>${w.lowMode || ''}</div>
+            <div class="track high"><span class="mode">高階駕馭</span>${w.highMode || ''}</div>
+          </div>
+          <div class="falsify"><strong>可證偽條件：</strong>${w.falsify || ''}</div>
+        </div>
+      `).join('');
+    }
+
+    // actions
+    if (r.actions) {
+      document.getElementById('actionList').innerHTML = r.actions.map(a => `
+        <div class="action-item" onclick="this.classList.toggle('done')"><div class="chk"></div><div class="text">${a}</div></div>
+      `).join('');
+    }
+
+    // outfit
+    if (r.outfit) {
+      const palette = (r.outfit.mainColors || []).map(c => `<div class="color-chip" data-name="${c.name}" style="background:${c.hex}"></div>`).join('');
+      document.querySelectorAll('.outfit .color-palette')[0].innerHTML = palette;
+      document.querySelector('.outfit .note').textContent = `材質：${r.outfit.materials || ''}。禁忌：${r.outfit.taboo || ''}。`;
+      const envHTML = `
+        工作桌朝向：<strong style="color:var(--gold);">${r.outfit.directions || ''}</strong><br>
+        環境焦點：${r.outfit.environment || ''}<br>
+        作息節奏：${r.outfit.schedule || ''}
+      `;
+      document.querySelectorAll('.outfit-col > div[style]')[0].innerHTML = envHTML;
+    }
+  }
+
+  // ===== Stage 4：深潛主題 =====
+  function runStage4() {
+    const topic = document.getElementById('stage4Topic').value.trim();
+    if (!topic) return alert('請先選一個主題或自行輸入');
+
+    // 若命盤 JSON 還沒分析（看範例盤的 demo 使用者），用佔位符
+    const resultJson = state.result
+      ? JSON.stringify(state.result, null, 2)
+      : '（尚未分析命盤——這是範例盤。真實使用時本區會帶入你命盤的 JSON。）';
+
+    const out = document.getElementById('stage4Output');
+    const s4prompt = STAGE4_PROMPT_TEMPLATE
+      .replace(/__TODAY__/g, formatDateForPrompt(getTodayInputValue()) || '__TODAY__')
+      .replace('__RESULT_JSON__', resultJson)
+      .replace('__TOPIC__', topic);
+
+    out.innerHTML = `
+      <div class="example-section">
+        <h4 style="display:flex; justify-content:space-between; align-items:center;">
+          <span>深潛咒語（已帶入你的命盤 + 主題）</span>
+          <button class="btn btn-ghost" style="padding:6px 14px; font-size:11px; letter-spacing:2px;" onclick="copyStage4Prompt(this)">複製深潛咒語</button>
+        </h4>
+        <pre id="stage4PromptBox" style="background:var(--bg-primary); border:1px solid var(--border-gold); padding:14px; max-height:180px; overflow:auto; font-size:11px; line-height:1.7; color:var(--text-secondary); white-space:pre-wrap; word-break:break-all; font-family:'Courier New',monospace;">${s4prompt.replace(/</g,'&lt;')}</pre>
+      </div>
+      <div style="margin-top:16px;">
+        <label style="display:block; font-size:13px; color:var(--gold); margin-bottom:8px; letter-spacing:1px;">貼上 Claude 回傳的深潛 JSON</label>
+        <textarea id="stage4Json" rows="5" placeholder='{"topic":"...","scenarioA":{...},"scenarioB":{...},"calibrationQuestion":"...","ifA":"...","ifB":"..."}' style="width:100%; padding:12px; background:var(--bg-primary); border:1px solid var(--border-gold); color:var(--text-primary); font-family:Courier New,monospace; font-size:12px; outline:none; resize:vertical;"></textarea>
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn" onclick="renderStage4()">渲染深潛結果 →</button>
+        </div>
+        <div class="error-box" id="stage4Error"></div>
+        <div id="stage4Rendered"></div>
+      </div>
+    `;
+    window.__stage4Prompt = s4prompt;
+  }
+
+  // Topic chip 互動
+  document.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('topic-chip')) return;
+    document.querySelectorAll('.topic-chip').forEach(c => c.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById('stage4Topic').value = e.target.dataset.topic;
+  });
+
+  async function copyStage4Prompt(btn) {
+    const text = window.__stage4Prompt || '';
+    try {
+      await navigator.clipboard.writeText(text);
+      const orig = btn.textContent;
+      btn.textContent = '已複製 ✓';
+      btn.style.color = 'var(--wood)';
+      btn.style.borderColor = 'var(--wood)';
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 1800);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = '已複製 ✓';
+    }
+  }
+
+  function renderStage4() {
+    const errEl = document.getElementById('stage4Error');
+    errEl.classList.remove('active');
+    const raw = document.getElementById('stage4Json').value.trim();
+    if (!raw) { errEl.textContent = '請貼上 JSON'; errEl.classList.add('active'); return; }
+    const jsonStr = extractJSON(raw);
+    if (!jsonStr) { errEl.textContent = '找不到 JSON 內容'; errEl.classList.add('active'); return; }
+    let s4;
+    try { s4 = JSON.parse(jsonStr); } catch (e) {
+      errEl.textContent = 'JSON 格式錯誤：' + e.message;
+      errEl.classList.add('active');
+      return;
+    }
+
+    // 判斷是新版（雙軌）還是舊版（單軌）
+    const isDualTrack = s4.scenarioA && s4.scenarioB;
+
+    if (isDualTrack) {
+      const a = s4.scenarioA || {};
+      const b = s4.scenarioB || {};
+      document.getElementById('stage4Rendered').innerHTML = `
+        <div style="display:flex; justify-content:flex-end; margin-top:16px; margin-bottom:4px;" data-no-export="true">
+          <button class="btn btn-ghost download-btn" type="button" onclick="downloadStage4Image(this)" title="把深潛分析存成 PNG 圖檔">
+            ↓ 下載深潛圖
+          </button>
+        </div>
+        <div id="stage4ExportRoot" class="block" style="margin-top:0;">
+          ${s4.topic ? `<h3 style="color:var(--gold);">深潛主題 · ${s4.topic}</h3>` : ''}
+
+          ${(s4.nativeType || s4.currentState) ? `
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+            ${s4.nativeType ? `<span style="font-size:11px; padding:6px 12px; border:1px solid var(--border-gold); color:var(--text-secondary); letter-spacing:2px;">本命底色 · <strong style="color:var(--gold);">${s4.nativeType}</strong></span>` : ''}
+            ${s4.currentState ? `<span style="font-size:11px; padding:6px 12px; border:1px solid var(--border-gold); color:var(--text-secondary); letter-spacing:2px;">當前狀態 · <strong style="color:var(--gold);">${s4.currentState}</strong></span>` : ''}
+          </div>` : ''}
+
+          ${s4.bottleneck ? `
+          <div class="reasoning" style="margin-bottom:24px;">
+            <span class="label">結構性瓶頸（這個主題在你命盤裡卡住的真正槓桿點）</span>
+            ${s4.bottleneck}
+          </div>` : ''}
+
+          <div style="font-size:11px; color:var(--gold); letter-spacing:3px; margin: 24px 0 12px; font-weight:700;">⊙ 平行宇宙雙軌推演</div>
+          <p style="font-size:12px; color:var(--text-muted); line-height:1.7; margin-bottom:16px;">同樣的命局組合，可能正走在 A 或 B 兩種完全不同的人生分支。AI 沒有水晶球判斷你在哪一軌，先看完兩個劇本，再用下方的校準提問定位自己。</p>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+            <div style="border:1px solid var(--wood); background:rgba(107,158,94,0.04); padding:18px;">
+              <div style="font-size:11px; color:var(--wood); letter-spacing:2px; margin-bottom:6px; font-weight:700;">劇本 A</div>
+              <div style="font-family:'Noto Serif TC',serif; font-size:16px; color:var(--wood); margin-bottom:12px; letter-spacing:1px;">${a.label || '順勢突破'}</div>
+              <div style="font-size:13px; color:var(--text-primary); line-height:1.85; margin-bottom:14px;">${a.narrative || ''}</div>
+              ${a.risk ? `<div style="font-size:12px; color:var(--text-secondary); line-height:1.7; padding:10px 12px; background:rgba(255,255,255,0.03); border-left:2px solid var(--gold);"><strong style="color:var(--gold);">隱藏風險：</strong>${a.risk}</div>` : ''}
+            </div>
+            <div style="border:1px solid var(--red); background:rgba(214,104,82,0.04); padding:18px;">
+              <div style="font-size:11px; color:var(--red); letter-spacing:2px; margin-bottom:6px; font-weight:700;">劇本 B</div>
+              <div style="font-family:'Noto Serif TC',serif; font-size:16px; color:var(--red); margin-bottom:12px; letter-spacing:1px;">${b.label || '逆勢套牢'}</div>
+              <div style="font-size:13px; color:var(--text-primary); line-height:1.85; margin-bottom:14px;">${b.narrative || ''}</div>
+              ${b.trap ? `<div style="font-size:12px; color:var(--text-secondary); line-height:1.7; padding:10px 12px; background:rgba(255,255,255,0.03); border-left:2px solid var(--red);"><strong style="color:var(--red);">最深陷阱：</strong>${b.trap}</div>` : ''}
+            </div>
+          </div>
+
+          ${s4.calibrationQuestion ? `
+          <div style="border:2px solid var(--gold); background:rgba(212,175,55,0.05); padding:20px; margin-bottom:20px;">
+            <div style="font-size:11px; color:var(--gold); letter-spacing:3px; margin-bottom:10px; font-weight:700;">⊙ 校準提問（在心裡回答，定位自己在 A 或 B）</div>
+            <div style="font-size:15px; color:var(--text-primary); line-height:1.8; font-family:'Noto Serif TC',serif;">${s4.calibrationQuestion}</div>
+          </div>` : ''}
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+            ${s4.ifA ? `
+            <div style="border-left:3px solid var(--wood); padding:14px 16px; background:var(--bg-card);">
+              <div style="font-size:11px; color:var(--wood); letter-spacing:2px; margin-bottom:8px; font-weight:700;">若你在劇本 A → 下一步</div>
+              <div style="font-size:13px; color:var(--text-primary); line-height:1.8;">${s4.ifA}</div>
+            </div>` : ''}
+            ${s4.ifB ? `
+            <div style="border-left:3px solid var(--red); padding:14px 16px; background:var(--bg-card);">
+              <div style="font-size:11px; color:var(--red); letter-spacing:2px; margin-bottom:8px; font-weight:700;">若你在劇本 B → 下一步</div>
+              <div style="font-size:13px; color:var(--text-primary); line-height:1.8;">${s4.ifB}</div>
+            </div>` : ''}
+          </div>
+
+          ${(s4.questions && s4.questions.length) ? `
+          <h3 style="margin-top:24px;">回答完校準提問後，繼續深挖的方向</h3>
+          <div class="action-list">
+            ${s4.questions.map(q => `<div class="action-item"><div class="chk" style="border-color:var(--gold); color:var(--gold);">?</div><div class="text">${q}</div></div>`).join('')}
+          </div>` : ''}
+        </div>
+      `;
+    } else {
+      // 舊版相容（單軌 diagnosis + firstMove）
+      document.getElementById('stage4Rendered').innerHTML = `
+        <div class="block" style="margin-top:24px;">
+          ${s4.topic ? `<h3 style="color:var(--gold);">深潛主題 · ${s4.topic}</h3>` : ''}
+          <div class="type-card" style="margin-bottom:16px;">
+            <div class="label">當前狀態</div>
+            <div class="value" style="color:${s4.status === '駭客模式' ? 'var(--wood)' : 'var(--red)'};">${s4.status || '—'}</div>
+            <div class="desc">${s4.diagnosis || ''}</div>
+          </div>
+          ${s4.bottleneck ? `
+          <div class="reasoning" style="margin-bottom:16px;">
+            <span class="label">真正的瓶頸（結構性根源）</span>
+            ${s4.bottleneck}
+          </div>` : ''}
+          <h3 style="margin-top:24px;">三個高價值追問方向</h3>
+          <div class="action-list">
+            ${(s4.questions || []).map(q => `<div class="action-item"><div class="chk" style="border-color:var(--gold); color:var(--gold);">?</div><div class="text">${q}</div></div>`).join('')}
+          </div>
+          ${s4.firstMove ? `
+          <h3 style="margin-top:24px;">下一步立即執行</h3>
+          <div class="action-item" style="border-left-color:var(--red);">
+            <div class="chk" style="border-color:var(--red); color:var(--red);">!</div>
+            <div class="text"><strong>${s4.firstMove}</strong></div>
+          </div>` : ''}
+        </div>
+      `;
+    }
+  }
+</script>
+</body>
+</html>
